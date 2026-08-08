@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -60,4 +61,12 @@ public class User {
 
     @Column(name = "is_active", nullable = false)
     private Boolean active = true;
+
+    @ManyToMany
+    @JoinTable(
+            name = "provider_services",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "service_id")
+    )
+    private Set<Service> services;
 }
