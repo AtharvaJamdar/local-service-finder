@@ -59,6 +59,7 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean active = true;
 
