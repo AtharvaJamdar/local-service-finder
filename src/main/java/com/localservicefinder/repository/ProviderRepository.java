@@ -1,13 +1,13 @@
 package com.localservicefinder.repository;
 
-import com.localservicefinder.entity.User;
+import com.localservicefinder.entity.Provider;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface ProviderRepository extends JpaRepository<Provider, Long> {
 
-    Optional<User> findByEmail(String email);
+    Optional<Provider> findByEmail(String email);
 
     boolean existsByEmail(String email);
 }

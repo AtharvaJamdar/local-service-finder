@@ -5,40 +5,35 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "services")
+@Table(name = "reviews")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Service {
+public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "booking_id", nullable = false, unique = true)
+    private Long bookingId;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
     @Column(name = "provider_id", nullable = false)
     private Long providerId;
 
-    @Column(name = "category_id", nullable = false)
-    private Long categoryId;
-
-    @Column(nullable = false, length = 150)
-    private String title;
+    @Column(nullable = false)
+    private Integer rating;
 
     @Column(length = 1000)
-    private String description;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
-
-    @Column(name = "is_active", nullable = false)
-    @Builder.Default
-    private Boolean isActive = true;
+    private String comment;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

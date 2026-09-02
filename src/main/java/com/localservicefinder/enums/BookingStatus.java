@@ -2,7 +2,8 @@ package com.localservicefinder.enums;
 
 public enum BookingStatus {
     PENDING,
-    ACCEPTED,
+    CONFIRMED,
+    REJECTED,
     COMPLETED,
     CANCELLED
 }

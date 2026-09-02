@@ -1,5 +1,6 @@
 package com.localservicefinder.entity;
 
+import com.localservicefinder.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -9,36 +10,37 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "services")
+@Table(name = "payments")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Service {
+public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "provider_id", nullable = false)
-    private Long providerId;
+    @Column(name = "booking_id", nullable = false, unique = true)
+    private Long bookingId;
 
-    @Column(name = "category_id", nullable = false)
-    private Long categoryId;
+    @Column(name = "razorpay_order_id", length = 100)
+    private String razorpayOrderId;
 
-    @Column(nullable = false, length = 150)
-    private String title;
-
-    @Column(length = 1000)
-    private String description;
+    @Column(name = "razorpay_payment_id", length = 100)
+    private String razorpayPaymentId;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    private BigDecimal amount;
 
-    @Column(name = "is_active", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     @Builder.Default
-    private Boolean isActive = true;
+    private PaymentStatus status = PaymentStatus.PENDING;
+
+    @Column(name = "paid_at")
+    private LocalDateTime paidAt;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

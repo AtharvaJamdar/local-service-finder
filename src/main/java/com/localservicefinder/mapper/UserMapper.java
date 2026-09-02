@@ -16,12 +16,12 @@ public class UserMapper {
         UserResponse response = new UserResponse();
 
         response.setId(user.getId());
-        response.setName(user.getName());
+        response.setName(user.getFullName());
         response.setEmail(user.getEmail());
         response.setPhone(user.getPhone());
         response.setRole(user.getRole());
         response.setCreatedAt(user.getCreatedAt());
-        response.setActive(user.getActive());
+
 
         return response;
     }

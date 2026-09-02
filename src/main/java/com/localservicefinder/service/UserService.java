@@ -30,14 +30,10 @@ public class UserService {
             throw new EmailAlreadyExistsException("Email already registered");
         }
 
-        if (userRepository.findByPhone(request.getPhone()).isPresent()) {
-            throw new PhoneAlreadyExistsException("Phone number already registered");
-        }
-
         User user = User.builder()
-                .name(request.getName())
+                .fullName(request.getName())
                 .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
                 .role(Role.CUSTOMER)
                 .build();

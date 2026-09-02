@@ -1,44 +1,42 @@
 package com.localservicefinder.entity;
 
+import com.localservicefinder.enums.RecipientType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "services")
+@Table(name = "notifications")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Service {
+public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "provider_id", nullable = false)
-    private Long providerId;
+    @Column(name = "recipient_id", nullable = false)
+    private Long recipientId;
 
-    @Column(name = "category_id", nullable = false)
-    private Long categoryId;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "recipient_type", nullable = false, length = 20)
+    private RecipientType recipientType;
 
     @Column(nullable = false, length = 150)
     private String title;
 
-    @Column(length = 1000)
-    private String description;
+    @Column(nullable = false, length = 1000)
+    private String message;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
-
-    @Column(name = "is_active", nullable = false)
+    @Column(name = "is_read", nullable = false)
     @Builder.Default
-    private Boolean isActive = true;
+    private Boolean isRead = false;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
