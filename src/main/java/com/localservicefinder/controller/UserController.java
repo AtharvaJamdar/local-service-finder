@@ -18,10 +18,4 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping
-    public UserResponse registerUser(
-            @Valid @RequestBody UserRegistrationRequest request) {
-
-        return userService.registerUser(request);
-    }
 }
