@@ -1,8 +1,9 @@
 package com.localservicefinder.dto;
 
-
+import com.localservicefinder.enums.RegistrationRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -24,9 +25,15 @@ public class UserRegistrationRequest {
     private String password;
 
     @NotBlank(message = "Phone number is required")
-    @Pattern(
-            regexp = "^[6-9]\\d{9}$",
-            message = "Phone number must be a valid 10-digit Indian mobile number"
-    )
+    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Phone number must be a valid 10-digit Indian mobile number")
     private String phone;
+
+    @NotNull(message = "Role is required (CUSTOMER or PROVIDER)")
+    private RegistrationRole role;
+
+    // Only used when role = PROVIDER.
+    private String businessName;
+    private String address;
+    private Double latitude;
+    private Double longitude;
 }

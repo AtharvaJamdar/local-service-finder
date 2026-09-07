@@ -9,6 +9,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+// Extra, provider-specific info about a User whose role is PROVIDER.
+// This is NOT a separate login identity — a provider logs in through
+// the same /auth/login as everyone else; this table just holds the
+// extra business fields a CUSTOMER doesn't need.
 @Entity
 @Table(name = "providers")
 @Getter
@@ -16,23 +20,17 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Provider {
+public class ProviderProfile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id", nullable = false, unique = true)
+    private Long userId;
+
     @Column(name = "business_name", nullable = false, length = 150)
     private String businessName;
-
-    @Column(nullable = false, unique = true, length = 150)
-    private String email;
-
-    @Column(name = "password_hash", nullable = false, length = 255)
-    private String passwordHash;
-
-    @Column(length = 15)
-    private String phone;
 
     @Column(length = 255)
     private String address;
