@@ -136,6 +136,38 @@ public class PaymentService {
         return toResponse(payment);
     }
 
+    // Called by BookingService when a PAID booking is cancelled early
+// enough to qualify for a refund. Does nothing if this booking was
+// never actually paid — cancelling an unpaid booking needs no refund.
+    @Transactional
+    public void refundForBooking(Long bookingId) {
+        Payment payment = paymentRepository.findByBookingId(bookingId).orElse(null);
+
+        if (payment == null || payment.getStatus() != PaymentStatus.PAID) {
+            return;
+        }
+
+        try {
+            RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+
+            JSONObject refundRequest = new JSONObject();
+            refundRequest.put("amount", payment.getAmount()
+                    .multiply(BigDecimal.valueOf(100))
+                    .longValueExact());
+
+            client.payments.refund(payment.getRazorpayPaymentId(), refundRequest);
+
+            payment.setStatus(PaymentStatus.REFUNDED);
+            paymentRepository.save(payment);
+
+        } catch (RazorpayException e) {
+            // If Razorpay's refund call itself fails, we deliberately do
+            // NOT silently mark it as refunded — that would be lying
+            // about money that never actually moved. Surface it instead.
+            throw new IllegalArgumentException("Refund failed: " + e.getMessage());
+        }
+    }
+
     private PaymentResponse toResponse(Payment payment) {
         return PaymentResponse.builder()
                 .id(payment.getId())

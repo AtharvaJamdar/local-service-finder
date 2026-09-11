@@ -29,7 +29,7 @@ public class SecurityConfig {
                 // No server-side sessions — every request proves itself with a token.
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/auth/**", "/services", "/services/search").permitAll()
+                        .requestMatchers("/health", "/auth/**", "/services", "/services/search", "/categories").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

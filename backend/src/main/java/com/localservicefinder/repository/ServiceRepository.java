@@ -2,6 +2,8 @@ package com.localservicefinder.repository;
 
 import com.localservicefinder.entity.Service;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -14,4 +16,10 @@ public interface ServiceRepository extends JpaRepository<Service, Long> {
 
     // A provider managing their own listings needs to see inactive ones too.
     List<Service> findByProviderId(Long providerId);
+
+    @Query("SELECT s FROM Service s WHERE s.isActive = true " +
+            "AND (:keyword IS NULL OR LOWER(s.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "     OR LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "AND (:categoryId IS NULL OR s.categoryId = :categoryId)")
+    List<Service> search(@Param("keyword") String keyword, @Param("categoryId") Long categoryId);
 }

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -26,6 +27,12 @@ public class BookingService {
     private final ServiceRepository serviceRepository;
     private final ProviderProfileRepository providerProfileRepository;
     private final UserRepository userRepository;
+    private final PaymentService paymentService;
+
+    // A cancellation only qualifies for a refund if it happens at least
+// this long before the scheduled appointment — protects the provider
+// from losing travel time/opportunity to a last-minute cancellation.
+    private static final long REFUND_CUTOFF_HOURS = 2;
 
     // Who is allowed to move a booking FROM one status TO another.
     // Anything not listed here is blocked, e.g. COMPLETED -> anything.
@@ -92,6 +99,19 @@ public class BookingService {
         }
 
         booking.setStatus(newStatus);
+        // Only cancellations can involve a refund — and only if it's
+// early enough. Cancelling within the cutoff window still goes
+// through, but the provider keeps the payment (they may already
+// be traveling or have turned down other work for this slot).
+        if (newStatus == BookingStatus.CANCELLED) {
+            boolean isEarlyEnough = LocalDateTime.now()
+                    .plusHours(REFUND_CUTOFF_HOURS)
+                    .isBefore(booking.getScheduledAt());
+
+            if (isEarlyEnough) {
+                paymentService.refundForBooking(booking.getId());
+            }
+        }
         return toResponse(bookingRepository.save(booking));
     }
 

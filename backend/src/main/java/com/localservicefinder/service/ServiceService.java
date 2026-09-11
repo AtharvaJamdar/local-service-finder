@@ -102,6 +102,11 @@ public class ServiceService {
         }
     }
 
+    public List<ServiceResponse> search(String keyword, Long categoryId) {
+        return serviceRepository.search(keyword, categoryId)
+                .stream().map(this::toResponse).toList();
+    }
+
     private ServiceResponse toResponse(com.localservicefinder.entity.Service service) {
         ProviderProfile provider = providerProfileRepository.findById(service.getProviderId()).orElse(null);
 
