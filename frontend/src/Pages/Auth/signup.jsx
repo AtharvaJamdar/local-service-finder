@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-
-// ---------- Color Palette ----------
-const COLORS = {
-  darkBlue: "#355872",
-  midBlue: "#7AAACE",
-  lightBlue: "#9CD5FF",
-  background: "#F7F8F0",
-};
+import "./Auth.css";
 
 // ---------- Validation Helpers ----------
 const validateFullName = (name) => {
@@ -48,9 +41,7 @@ const validateRole = (role) => {
   return "";
 };
 
-// ---------- Main Component ----------
 const Signup = () => {
-  // Form field values
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -59,20 +50,15 @@ const Signup = () => {
     role: "",
   });
 
-  // Validation errors
   const [errors, setErrors] = useState({});
-
-  // UI state
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Handle input changes for text-based fields
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Re-validate the field as the user types, to clear/update errors live
     let errorMessage = "";
     if (name === "fullName") errorMessage = validateFullName(value);
     if (name === "email") errorMessage = validateEmail(value);
@@ -82,27 +68,22 @@ const Signup = () => {
     setErrors((prev) => ({ ...prev, [name]: errorMessage }));
   };
 
-  // Handle role selection (User / Service Provider)
   const handleRoleSelect = (role) => {
     setFormData((prev) => ({ ...prev, role }));
     setErrors((prev) => ({ ...prev, role: "" }));
   };
 
-  // Toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
 
-  // Placeholder login handler
   const handleLoginClick = () => {
     console.log("Navigate to login page (placeholder function).");
   };
 
-  // Handle form submission
   const handleSubmit = (e) => {
-    e.preventDefault(); // Prevent default browser form submission
+    e.preventDefault();
 
-    // Run all validations on submit
     const newErrors = {
       fullName: validateFullName(formData.fullName),
       email: validateEmail(formData.email),
@@ -113,21 +94,17 @@ const Signup = () => {
 
     setErrors(newErrors);
 
-    // Check if any errors exist
     const hasErrors = Object.values(newErrors).some((err) => err !== "");
     if (hasErrors) {
       setSuccessMessage("");
-      return; // Stop submission if validation fails
+      return;
     }
 
-    // Simulate submission process
     setIsSubmitting(true);
     setSuccessMessage("");
 
-    // Log form data instead of sending to an API
     console.log("Submitted Form Data:", formData);
 
-    // Simulate a short delay for "submitting" state
     setTimeout(() => {
       setIsSubmitting(false);
       setSuccessMessage("Account created successfully!");
@@ -135,25 +112,22 @@ const Signup = () => {
   };
 
   return (
-    <div style={styles.pageWrapper}>
-      <div style={styles.card}>
-        {/* Header Section */}
-        <h1 style={styles.heading}>Create Your Account</h1>
-        <p style={styles.subtitle}>
+    <div className="lsf-auth-page">
+      <div className="lsf-auth-card">
+        <h1 className="lsf-auth-heading">Create Your Account</h1>
+        <p className="lsf-auth-subtitle">
           Join Local Service Finder and connect with trusted services near you.
         </p>
 
-        {/* Success Message */}
         {successMessage && (
-          <div style={styles.successBox} role="status">
+          <div className="lsf-success-box" role="status">
             {successMessage}
           </div>
         )}
 
         <form onSubmit={handleSubmit} noValidate>
-          {/* Full Name Field */}
-          <div style={styles.fieldGroup}>
-            <label htmlFor="fullName" style={styles.label}>
+          <div className="lsf-field-group">
+            <label htmlFor="fullName" className="lsf-label">
               Full Name
             </label>
             <input
@@ -163,23 +137,19 @@ const Signup = () => {
               placeholder="Enter your full name"
               value={formData.fullName}
               onChange={handleChange}
-              style={{
-                ...styles.input,
-                borderColor: errors.fullName ? "#d9534f" : COLORS.midBlue,
-              }}
+              className={`lsf-input ${errors.fullName ? "lsf-input-error" : ""}`}
               aria-invalid={!!errors.fullName}
               aria-describedby="fullName-error"
             />
             {errors.fullName && (
-              <span id="fullName-error" style={styles.errorText}>
+              <span id="fullName-error" className="lsf-error-text">
                 {errors.fullName}
               </span>
             )}
           </div>
 
-          {/* Email Field */}
-          <div style={styles.fieldGroup}>
-            <label htmlFor="email" style={styles.label}>
+          <div className="lsf-field-group">
+            <label htmlFor="email" className="lsf-label">
               Email
             </label>
             <input
@@ -189,26 +159,22 @@ const Signup = () => {
               placeholder="you@example.com"
               value={formData.email}
               onChange={handleChange}
-              style={{
-                ...styles.input,
-                borderColor: errors.email ? "#d9534f" : COLORS.midBlue,
-              }}
+              className={`lsf-input ${errors.email ? "lsf-input-error" : ""}`}
               aria-invalid={!!errors.email}
               aria-describedby="email-error"
             />
             {errors.email && (
-              <span id="email-error" style={styles.errorText}>
+              <span id="email-error" className="lsf-error-text">
                 {errors.email}
               </span>
             )}
           </div>
 
-          {/* Password Field with Show/Hide Toggle */}
-          <div style={styles.fieldGroup}>
-            <label htmlFor="password" style={styles.label}>
+          <div className="lsf-field-group">
+            <label htmlFor="password" className="lsf-label">
               Password
             </label>
-            <div style={styles.passwordWrapper}>
+            <div className="lsf-password-wrapper">
               <input
                 id="password"
                 name="password"
@@ -216,33 +182,30 @@ const Signup = () => {
                 placeholder="At least 8 characters"
                 value={formData.password}
                 onChange={handleChange}
-                style={{
-                  ...styles.input,
-                  paddingRight: "48px",
-                  borderColor: errors.password ? "#d9534f" : COLORS.midBlue,
-                }}
+                className={`lsf-input lsf-input-with-toggle ${
+                  errors.password ? "lsf-input-error" : ""
+                }`}
                 aria-invalid={!!errors.password}
                 aria-describedby="password-error"
               />
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
-                style={styles.toggleButton}
+                className="lsf-toggle-btn-icon"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? "🙈" : "👁️"}
               </button>
             </div>
             {errors.password && (
-              <span id="password-error" style={styles.errorText}>
+              <span id="password-error" className="lsf-error-text">
                 {errors.password}
               </span>
             )}
           </div>
 
-          {/* Phone Number Field */}
-          <div style={styles.fieldGroup}>
-            <label htmlFor="phone" style={styles.label}>
+          <div className="lsf-field-group">
+            <label htmlFor="phone" className="lsf-label">
               Phone Number
             </label>
             <input
@@ -253,24 +216,20 @@ const Signup = () => {
               value={formData.phone}
               onChange={handleChange}
               maxLength={10}
-              style={{
-                ...styles.input,
-                borderColor: errors.phone ? "#d9534f" : COLORS.midBlue,
-              }}
+              className={`lsf-input ${errors.phone ? "lsf-input-error" : ""}`}
               aria-invalid={!!errors.phone}
               aria-describedby="phone-error"
             />
             {errors.phone && (
-              <span id="phone-error" style={styles.errorText}>
+              <span id="phone-error" className="lsf-error-text">
                 {errors.phone}
               </span>
             )}
           </div>
 
-          {/* Role Selection: User or Service Provider */}
-          <div style={styles.fieldGroup}>
-            <span style={styles.label}>I am a</span>
-            <div style={styles.roleContainer}>
+          <div className="lsf-field-group">
+            <span className="lsf-label">I am a</span>
+            <div className="lsf-role-container">
               <div
                 onClick={() => handleRoleSelect("user")}
                 role="radio"
@@ -280,10 +239,9 @@ const Signup = () => {
                   if (e.key === "Enter" || e.key === " ")
                     handleRoleSelect("user");
                 }}
-                style={{
-                  ...styles.roleCard,
-                  ...(formData.role === "user" ? styles.roleCardActive : {}),
-                }}
+                className={`lsf-role-card ${
+                  formData.role === "user" ? "lsf-role-card-active" : ""
+                }`}
               >
                 User
               </div>
@@ -296,189 +254,36 @@ const Signup = () => {
                   if (e.key === "Enter" || e.key === " ")
                     handleRoleSelect("provider");
                 }}
-                style={{
-                  ...styles.roleCard,
-                  ...(formData.role === "provider"
-                    ? styles.roleCardActive
-                    : {}),
-                }}
+                className={`lsf-role-card ${
+                  formData.role === "provider" ? "lsf-role-card-active" : ""
+                }`}
               >
                 Service Provider
               </div>
             </div>
-            {errors.role && <span style={styles.errorText}>{errors.role}</span>}
+            {errors.role && (
+              <span className="lsf-error-text">{errors.role}</span>
+            )}
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={isSubmitting}
-            style={{
-              ...styles.submitButton,
-              opacity: isSubmitting ? 0.7 : 1,
-              cursor: isSubmitting ? "not-allowed" : "pointer",
-            }}
-            onMouseOver={(e) => {
-              if (!isSubmitting)
-                e.currentTarget.style.backgroundColor = "#2b4760";
-            }}
-            onMouseOut={(e) => {
-              if (!isSubmitting)
-                e.currentTarget.style.backgroundColor = COLORS.darkBlue;
-            }}
+            className="lsf-submit-btn"
           >
             {isSubmitting ? "Creating Account..." : "Create Account"}
           </button>
         </form>
 
-        {/* Login Redirect Section */}
-        <p style={styles.loginText}>
+        <p className="lsf-switch-text">
           Already have an account?{" "}
-          <span style={styles.loginLink} onClick={handleLoginClick}>
+          <span className="lsf-switch-link" onClick={handleLoginClick}>
             Login
           </span>
         </p>
       </div>
     </div>
   );
-};
-
-// ---------- Styles (CSS-in-JS) ----------
-const styles = {
-  pageWrapper: {
-    minHeight: "100vh",
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: COLORS.background,
-    padding: "24px",
-    boxSizing: "border-box",
-    fontFamily: "'Segoe UI', Roboto, Arial, sans-serif",
-  },
-  card: {
-    width: "100%",
-    maxWidth: "440px",
-    backgroundColor: "#FFFFFF",
-    borderRadius: "16px",
-    padding: "36px 32px",
-    boxShadow: "0 10px 30px rgba(53, 88, 114, 0.15)",
-    border: `1px solid ${COLORS.lightBlue}`,
-    boxSizing: "border-box",
-  },
-  heading: {
-    color: COLORS.darkBlue,
-    fontSize: "28px",
-    fontWeight: 700,
-    marginBottom: "8px",
-    textAlign: "center",
-  },
-  subtitle: {
-    color: "#5a7385",
-    fontSize: "14px",
-    textAlign: "center",
-    marginBottom: "24px",
-    lineHeight: 1.5,
-  },
-  successBox: {
-    backgroundColor: "#e6f7e9",
-    color: "#2e7d32",
-    padding: "12px 16px",
-    borderRadius: "10px",
-    marginBottom: "18px",
-    fontSize: "14px",
-    textAlign: "center",
-    border: "1px solid #b6e6c0",
-  },
-  fieldGroup: {
-    marginBottom: "18px",
-    display: "flex",
-    flexDirection: "column",
-  },
-  label: {
-    color: COLORS.darkBlue,
-    fontSize: "14px",
-    fontWeight: 600,
-    marginBottom: "6px",
-  },
-  input: {
-    padding: "12px 14px",
-    borderRadius: "10px",
-    border: `1.5px solid ${COLORS.midBlue}`,
-    fontSize: "14px",
-    outline: "none",
-    backgroundColor: COLORS.background,
-    color: COLORS.darkBlue,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  passwordWrapper: {
-    position: "relative",
-    display: "flex",
-    alignItems: "center",
-  },
-  toggleButton: {
-    position: "absolute",
-    right: "10px",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "16px",
-    padding: "4px",
-  },
-  errorText: {
-    color: "#d9534f",
-    fontSize: "12.5px",
-    marginTop: "5px",
-  },
-  roleContainer: {
-    display: "flex",
-    gap: "12px",
-    flexWrap: "wrap",
-  },
-  roleCard: {
-    flex: "1 1 45%",
-    padding: "14px 10px",
-    textAlign: "center",
-    borderRadius: "10px",
-    border: `1.5px solid ${COLORS.midBlue}`,
-    color: COLORS.darkBlue,
-    fontSize: "14px",
-    fontWeight: 600,
-    cursor: "pointer",
-    backgroundColor: COLORS.background,
-    transition: "all 0.2s ease",
-  },
-  roleCardActive: {
-    backgroundColor: COLORS.lightBlue,
-    borderColor: COLORS.darkBlue,
-    boxShadow: "0 2px 8px rgba(53, 88, 114, 0.25)",
-  },
-  submitButton: {
-    width: "100%",
-    padding: "14px",
-    borderRadius: "10px",
-    border: "none",
-    backgroundColor: COLORS.darkBlue,
-    color: "#FFFFFF",
-    fontSize: "15px",
-    fontWeight: 700,
-    marginTop: "8px",
-    transition: "background-color 0.2s ease",
-  },
-  loginText: {
-    textAlign: "center",
-    marginTop: "20px",
-    fontSize: "13.5px",
-    color: "#5a7385",
-  },
-  loginLink: {
-    color: COLORS.darkBlue,
-    fontWeight: 700,
-    cursor: "pointer",
-    textDecoration: "underline",
-  },
 };
 
 export default Signup;
