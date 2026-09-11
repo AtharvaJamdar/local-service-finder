@@ -82,4 +82,13 @@ public class ServiceController {
         serviceService.delete(me.getId(), id);
         return ResponseEntity.ok(ApiResponse.success("Service deleted", null));
     }
+
+    // PUBLIC — search by keyword (matches title or description) and/or category.
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<ServiceResponse>>> search(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId) {
+
+        return ResponseEntity.ok(ApiResponse.success("Search results", serviceService.search(keyword, categoryId)));
+    }
 }
