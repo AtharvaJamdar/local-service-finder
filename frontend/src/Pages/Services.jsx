@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import ServiceCard from "../components/ServiceCard";
 
@@ -34,6 +35,8 @@ const services = [
 ];
 
 const Services = () => {
+  const navigate = useNavigate();
+
   return (
     <>
       <Navbar />
@@ -54,7 +57,7 @@ const Services = () => {
                 title={service.title}
                 description={service.description}
                 image={service.image}
-                onFindProvider={() => console.log(`${service.title} selected`)}
+                onFindProvider={() => navigate(`/map/${service.title}`)}
               />
             ))}
           </div>

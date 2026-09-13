@@ -1,24 +1,22 @@
-import React, { useState } from "react";
-import Navbar from "./components/Navbar";
-import Signup from "./Pages/Auth/signup";
+import React from "react";
+import { Routes, Route } from "react-router-dom";
 import Login from "./Pages/Auth/login";
-// import Services from "./Pages/Services";
-//import Map from "./Pages/Map";
+import Signup from "./Pages/Auth/signup";
+import Services from "./Pages/Services";
+import Map from "./Pages/Map";
+import Booking from "./Pages/Booking";
+import Tracking from "./Pages/Tracking";
 
 const App = () => {
-  const [showLogin, setShowLogin] = useState(true);
-
   return (
-    <div>
-      <div className="container" style={{ paddingTop: "24px" }}>
-        <button onClick={() => setShowLogin((prev) => !prev)}>
-          Switch to {showLogin ? "Signup" : "Login"}
-        </button>
-        {showLogin ? <Login /> : <Signup />}
-      </div>
-      {/* <Services />; */}
-      {/* <Map /> */}
-    </div>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/services" element={<Services />} />
+      <Route path="/map/:category" element={<Map />} />
+      <Route path="/booking/:providerId" element={<Booking />} />
+      <Route path="/tracking/:providerId" element={<Tracking />} />
+    </Routes>
   );
 };
 

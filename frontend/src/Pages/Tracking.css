@@ -1,0 +1,188 @@
+.tracking-page {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  min-height: calc(100vh - 73px);
+  box-sizing: border-box;
+  background: linear-gradient(
+    160deg,
+    var(--background-color) 0%,
+    rgba(156, 213, 255, 0.15) 55%,
+    var(--background-color) 100%
+  );
+}
+
+.tracking-page .map-pane {
+  position: relative;
+  flex: 1 1 65%;
+  min-width: 0;
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.tracking-status {
+  flex: 0 0 340px;
+  max-width: 340px;
+  padding: 24px;
+  height: fit-content;
+}
+
+.tracking-status-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--white);
+  background: linear-gradient(
+    135deg,
+    var(--secondary-color),
+    var(--primary-color)
+  );
+  box-shadow: var(--shadow-sm);
+}
+
+.tracking-status h2 {
+  margin-top: 16px;
+  font-size: 1.2rem;
+  color: var(--primary-color);
+}
+
+.tracking-category {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.tracking-details {
+  list-style: none;
+  margin: 18px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tracking-details li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed rgba(53, 88, 114, 0.15);
+}
+
+.tracking-details li span:first-child {
+  color: var(--text-muted);
+}
+
+.tracking-details li span:last-child {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.tracking-contact {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(53, 88, 114, 0.1);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 760px) {
+  .tracking-page {
+    flex-direction: column;
+  }
+
+  .tracking-status {
+    max-width: none;
+  }
+}
+
+.tracking-stepper {
+  list-style: none;
+  margin: 20px 0;
+  padding: 0;
+  position: relative;
+}
+
+.tracking-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  padding-left: 4px;
+}
+
+.tracking-step::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: rgba(53, 88, 114, 0.15);
+  z-index: 0;
+}
+
+.tracking-step:first-child::before {
+  top: 50%;
+}
+
+.tracking-step:last-child::before {
+  bottom: 50%;
+}
+
+.tracking-step--done::before {
+  background: linear-gradient(
+    180deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+}
+
+.tracking-step-dot {
+  position: relative;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2.5px solid rgba(53, 88, 114, 0.25);
+  flex-shrink: 0;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.tracking-step--done .tracking-step-dot {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.tracking-step--active .tracking-step-dot {
+  background: linear-gradient(
+    135deg,
+    var(--secondary-color),
+    var(--accent-color)
+  );
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 4px rgba(122, 170, 206, 0.25);
+}
+
+.tracking-step-label {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.tracking-step--done .tracking-step-label {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.tracking-step--active .tracking-step-label {
+  color: var(--primary-color);
+  font-weight: 700;
+}

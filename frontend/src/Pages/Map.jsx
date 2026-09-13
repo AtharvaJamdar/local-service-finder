@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import MapView from "../components/MapView";
 import ProviderSidebar from "../components/ProviderSidebar";
@@ -7,6 +8,8 @@ import { distanceInMeters, formatDistance } from "../utils/distance";
 import "./Map.css";
 
 const Map = () => {
+  const { category } = useParams();
+
   const [userPosition, setUserPosition] = useState(null);
   const [locationError, setLocationError] = useState(() =>
     !navigator.geolocation
@@ -29,7 +32,13 @@ const Map = () => {
   }, []);
 
   const providers = useMemo(() => {
-    return providerData
+    const filtered = category
+      ? providerData.filter(
+          (p) => p.category.toLowerCase() === category.toLowerCase(),
+        )
+      : providerData;
+
+    return filtered
       .map((provider) => {
         const distanceMeters = userPosition
           ? distanceInMeters(userPosition, provider)
@@ -44,7 +53,7 @@ const Map = () => {
         (a, b) =>
           (a.distanceMeters ?? Infinity) - (b.distanceMeters ?? Infinity),
       );
-  }, [userPosition]);
+  }, [userPosition, category]);
 
   return (
     <>

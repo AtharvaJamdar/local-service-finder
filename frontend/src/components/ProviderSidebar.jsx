@@ -1,10 +1,13 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const ProviderSidebar = ({
   providers,
   selectedProviderId,
   onSelectProvider,
 }) => {
+  const navigate = useNavigate();
+
   return (
     <aside className="provider-sidebar">
       <div className="provider-sidebar-header">
@@ -17,7 +20,7 @@ const ProviderSidebar = ({
           const isActive = provider.id === selectedProviderId;
           return (
             <li key={provider.id}>
-              <button
+              <div
                 className={`provider-card card${isActive ? " provider-card--active" : ""}`}
                 onClick={() => onSelectProvider(provider.id)}
               >
@@ -40,7 +43,18 @@ const ProviderSidebar = ({
                   </span>
                   <span className="provider-phone">{provider.phone}</span>
                 </div>
-              </button>
+
+                <button
+                  type="button"
+                  className="btn btn-primary book-now-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/booking/${provider.id}`);
+                  }}
+                >
+                  Book Now
+                </button>
+              </div>
             </li>
           );
         })}

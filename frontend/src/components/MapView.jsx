@@ -5,6 +5,7 @@ import {
   Marker,
   Tooltip,
   Circle,
+  Polyline,
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
@@ -74,11 +75,29 @@ function FlyToSelection({ target }) {
   return null;
 }
 
+// Fits the map bounds to show both points — used for the route view.
+function FitToRoute({ from, to }) {
+  const map = useMap();
+  useEffect(() => {
+    if (from && to) {
+      map.fitBounds(
+        [
+          [from.lat, from.lng],
+          [to.lat, to.lng],
+        ],
+        { padding: [60, 60] },
+      );
+    }
+  }, [from, to, map]);
+  return null;
+}
+
 const MapView = ({
   userPosition,
   providers,
   selectedProviderId,
   onSelectProvider,
+  showRoute = false,
 }) => {
   if (!userPosition) {
     return (
@@ -104,15 +123,17 @@ const MapView = ({
 
       <UserMarker position={userPosition} />
 
-      <Circle
-        center={[userPosition.lat, userPosition.lng]}
-        radius={5000}
-        pathOptions={{
-          color: "#355872",
-          fillColor: "#9cd5ff",
-          fillOpacity: 0.15,
-        }}
-      />
+      {!showRoute && (
+        <Circle
+          center={[userPosition.lat, userPosition.lng]}
+          radius={5000}
+          pathOptions={{
+            color: "#355872",
+            fillColor: "#9cd5ff",
+            fillOpacity: 0.15,
+          }}
+        />
+      )}
 
       {providers.map((provider) => {
         const dist = formatDistance(provider.distanceMeters);
@@ -133,7 +154,25 @@ const MapView = ({
         );
       })}
 
-      <FlyToSelection target={selected} />
+      {showRoute && selected && (
+        <>
+          <Polyline
+            positions={[
+              [userPosition.lat, userPosition.lng],
+              [selected.lat, selected.lng],
+            ]}
+            pathOptions={{
+              color: "#355872",
+              weight: 4,
+              dashArray: "8 10",
+              opacity: 0.8,
+            }}
+          />
+          <FitToRoute from={userPosition} to={selected} />
+        </>
+      )}
+
+      {!showRoute && <FlyToSelection target={selected} />}
     </MapContainer>
   );
 };
