@@ -1,0 +1,234 @@
+.job-detail-page {
+  display: flex;
+  justify-content: center;
+  padding: 32px 20px;
+  min-height: calc(100vh - 73px);
+  background: linear-gradient(
+    160deg,
+    var(--background-color) 0%,
+    rgba(156, 213, 255, 0.15) 55%,
+    var(--background-color) 100%
+  );
+  box-sizing: border-box;
+}
+
+.job-detail-card {
+  width: 100%;
+  max-width: 560px;
+  padding: 28px;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.job-detail-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.job-detail-top h2 {
+  font-size: 1.25rem;
+  color: var(--primary-color);
+}
+
+.job-status-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  color: var(--white);
+}
+
+.job-status-badge--requested {
+  background: linear-gradient(135deg, #e67e22, #f39c12);
+}
+.job-status-badge--accepted {
+  background: linear-gradient(
+    135deg,
+    var(--secondary-color),
+    var(--primary-color)
+  );
+}
+.job-status-badge--on_the_way {
+  background: linear-gradient(135deg, #2980b9, #6dd5fa);
+}
+.job-status-badge--arrived {
+  background: linear-gradient(135deg, #8e44ad, #c39bd3);
+}
+.job-status-badge--completed {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+}
+.job-status-badge--declined {
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+}
+
+.job-detail-meta {
+  list-style: none;
+  margin: 18px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.job-detail-meta li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed rgba(53, 88, 114, 0.15);
+}
+
+.job-detail-meta li span:first-child {
+  color: var(--text-muted);
+}
+
+.job-detail-meta li span:last-child {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.job-detail-description h3 {
+  font-size: 0.95rem;
+  color: var(--primary-color);
+  margin-bottom: 6px;
+}
+
+.job-detail-description p {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ---------- Stepper ---------- */
+
+.job-stepper {
+  list-style: none;
+  margin: 24px 0;
+  padding: 0;
+}
+
+.job-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  padding-left: 4px;
+}
+
+.job-step::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: rgba(53, 88, 114, 0.15);
+  z-index: 0;
+}
+
+.job-step:first-child::before {
+  top: 50%;
+}
+
+.job-step:last-child::before {
+  bottom: 50%;
+}
+
+.job-step--done::before {
+  background: linear-gradient(
+    180deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+}
+
+.job-step-dot {
+  position: relative;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2.5px solid rgba(53, 88, 114, 0.25);
+  flex-shrink: 0;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.job-step--done .job-step-dot {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.job-step--active .job-step-dot {
+  background: linear-gradient(
+    135deg,
+    var(--secondary-color),
+    var(--accent-color)
+  );
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 4px rgba(122, 170, 206, 0.25);
+}
+
+.job-step-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.job-step--done .job-step-label {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.job-step--active .job-step-label {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+/* ---------- Actions ---------- */
+
+.job-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.job-btn-decline {
+  border: 1.5px solid #c0392b;
+  color: #c0392b;
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.job-btn-decline:hover {
+  background: rgba(192, 57, 43, 0.08);
+}
+
+.job-amount-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.job-completed-note {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.job-back-btn {
+  margin-top: 24px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.job-back-btn:hover {
+  color: var(--primary-color);
+}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Auth.css";
 
 // ---------- Validation Helpers ----------
@@ -42,6 +43,8 @@ const validateRole = (role) => {
 };
 
 const Signup = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -78,7 +81,7 @@ const Signup = () => {
   };
 
   const handleLoginClick = () => {
-    console.log("Navigate to login page (placeholder function).");
+    navigate("/login");
   };
 
   const handleSubmit = (e) => {
@@ -108,6 +111,14 @@ const Signup = () => {
     setTimeout(() => {
       setIsSubmitting(false);
       setSuccessMessage("Account created successfully!");
+
+      setTimeout(() => {
+        if (formData.role === "provider") {
+          navigate("/provider/profile");
+        } else {
+          navigate("/services");
+        }
+      }, 600);
     }, 800);
   };
 
