@@ -57,6 +57,17 @@ public class BookingController {
                 ApiResponse.success("Bookings for your services", bookingService.getMyBookingsAsProvider(me.getId())));
     }
 
+    // Single booking, e.g. for the Tracking page polling live status.
+    // Open to any logged-in user — BookingService.getById only lets the
+    // customer or provider on THIS booking actually see it.
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<BookingResponse>> getById(
+            @AuthenticationPrincipal UserPrincipal me,
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(ApiResponse.success("Booking fetched", bookingService.getById(me.getId(), id)));
+    }
+
     // Confirm / reject / complete / cancel — open to any logged-in user,
     // because the actual rule is enforced inside BookingService, not here.
     @PatchMapping("/{id}/status")

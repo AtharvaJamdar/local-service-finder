@@ -68,19 +68,32 @@ public class AuthService {
         return buildAuthResponse(user);
     }
 
-    // Providers need a business name — customers don't have this field, so
-    // we can't put @NotBlank on it directly in the DTO; check it here instead.
+    // Providers need a business name and a real location — customers don't
+// have these fields at all, so they can't be @NotBlank/@NotNull directly
+// on the shared DTO; checked here instead, only when role = PROVIDER.
     private void createProviderProfile(User user, UserRegistrationRequest request) {
         if (request.getBusinessName() == null || request.getBusinessName().isBlank()) {
             throw new IllegalArgumentException("Business name is required when registering as a provider");
+        }
+
+        if (request.getLatitude() == null || request.getLongitude() == null) {
+            throw new IllegalArgumentException("Business location (latitude and longitude) is required when registering as a provider");
+        }
+
+        if (request.getLatitude() < -90 || request.getLatitude() > 90) {
+            throw new IllegalArgumentException("Latitude must be between -90 and 90");
+        }
+
+        if (request.getLongitude() < -180 || request.getLongitude() > 180) {
+            throw new IllegalArgumentException("Longitude must be between -180 and 180");
         }
 
         ProviderProfile profile = ProviderProfile.builder()
                 .userId(user.getId())
                 .businessName(request.getBusinessName())
                 .address(request.getAddress())
-                .latitude(request.getLatitude() != null ? java.math.BigDecimal.valueOf(request.getLatitude()) : null)
-                .longitude(request.getLongitude() != null ? java.math.BigDecimal.valueOf(request.getLongitude()) : null)
+                .latitude(java.math.BigDecimal.valueOf(request.getLatitude()))
+                .longitude(java.math.BigDecimal.valueOf(request.getLongitude()))
                 .isVerified(false)
                 .status(ProviderStatus.PENDING)
                 .build();

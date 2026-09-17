@@ -20,6 +20,11 @@ public class ServiceResponse {
 
     private Long providerId;
     private String providerName;
+    private String providerPhone;
+    private Double providerLatitude;
+    private Double providerLongitude;
+    private Double providerRatingAverage;
+    private Integer providerReviewCount;
     private Long categoryId;
     private String categoryName;
 

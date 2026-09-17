@@ -24,6 +24,7 @@ public class ServiceService {
     private final ProviderProfileRepository providerProfileRepository;
     private final ServiceCategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final com.localservicefinder.repository.ReviewRepository reviewRepository;
 
     public List<ServiceResponse> getAllActive() {
         return serviceRepository.findByIsActiveTrue()
@@ -111,9 +112,24 @@ public class ServiceService {
         ProviderProfile provider = providerProfileRepository.findById(service.getProviderId()).orElse(null);
 
         String providerName = null;
+        String providerPhone = null;
+        Double providerLatitude = null;
+        Double providerLongitude = null;
         if (provider != null) {
             providerName = userRepository.findById(provider.getUserId()).map(User::getFullName).orElse(null);
+            providerPhone = userRepository.findById(provider.getUserId()).map(User::getPhone).orElse(null);
+            providerLatitude = provider.getLatitude() != null ? provider.getLatitude().doubleValue() : null;
+            providerLongitude = provider.getLongitude() != null ? provider.getLongitude().doubleValue() : null;
         }
+
+        // Rating is computed on the fly from Review rows rather than stored -
+        // review volume is small enough here that a stored/cached average
+        // isn't worth the extra bookkeeping yet.
+        List<com.localservicefinder.entity.Review> reviews =
+                reviewRepository.findByProviderId(service.getProviderId());
+        Double ratingAverage = reviews.isEmpty()
+                ? null
+                : reviews.stream().mapToInt(com.localservicefinder.entity.Review::getRating).average().orElse(0);
 
         String categoryName = categoryRepository.findById(service.getCategoryId())
                 .map(ServiceCategory::getName).orElse(null);
@@ -126,6 +142,11 @@ public class ServiceService {
                 .isActive(service.getIsActive())
                 .providerId(service.getProviderId())
                 .providerName(providerName)
+                .providerPhone(providerPhone)
+                .providerLatitude(providerLatitude)
+                .providerLongitude(providerLongitude)
+                .providerRatingAverage(ratingAverage)
+                .providerReviewCount(reviews.size())
                 .categoryId(service.getCategoryId())
                 .categoryName(categoryName)
                 .createdAt(service.getCreatedAt())
