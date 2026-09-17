@@ -35,10 +35,10 @@ public class ProviderProfile {
     @Column(length = 255)
     private String address;
 
-    @Column(precision = 10, scale = 7)
+    @Column(nullable = false, precision = 10, scale = 7)
     private BigDecimal latitude;
 
-    @Column(precision = 10, scale = 7)
+    @Column(nullable = false, precision = 10, scale = 7)
     private BigDecimal longitude;
 
     @Column(name = "is_verified", nullable = false)
