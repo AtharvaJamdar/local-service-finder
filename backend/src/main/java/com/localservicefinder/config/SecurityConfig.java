@@ -26,8 +26,10 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
-                // No server-side sessions — every request proves itself with a token.
+                .cors(cors -> {})
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // No server-side sessions — every request proves itself with a token.
+
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health", "/auth/**", "/services", "/services/search", "/categories", "/availability/provider/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
