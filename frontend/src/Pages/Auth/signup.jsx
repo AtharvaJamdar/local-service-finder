@@ -42,6 +42,18 @@ const validateRole = (role) => {
   return "";
 };
 
+const validateBusinessName = (name, role) => {
+  if (role !== "provider") return "";
+  if (!name.trim()) return "Business name is required for service providers.";
+  return "";
+};
+
+const validateAddress = (address, role) => {
+  if (role !== "provider") return "";
+  if (!address.trim()) return "Address is required for service providers.";
+  return "";
+};
+
 const Signup = () => {
   const navigate = useNavigate();
 
@@ -51,12 +63,17 @@ const Signup = () => {
     password: "",
     phone: "",
     role: "",
+    businessName: "",
+    address: "",
+    latitude: "",
+    longitude: "",
   });
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [locationStatus, setLocationStatus] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,6 +84,10 @@ const Signup = () => {
     if (name === "email") errorMessage = validateEmail(value);
     if (name === "password") errorMessage = validatePassword(value);
     if (name === "phone") errorMessage = validatePhone(value);
+    if (name === "businessName")
+      errorMessage = validateBusinessName(value, formData.role);
+    if (name === "address")
+      errorMessage = validateAddress(value, formData.role);
 
     setErrors((prev) => ({ ...prev, [name]: errorMessage }));
   };
@@ -84,7 +105,29 @@ const Signup = () => {
     navigate("/login");
   };
 
-  const handleSubmit = (e) => {
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationStatus("Geolocation isn't supported by this browser.");
+      return;
+    }
+    setLocationStatus("Fetching location…");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setFormData((prev) => ({
+          ...prev,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        }));
+        setLocationStatus("Location captured.");
+      },
+      () =>
+        setLocationStatus(
+          "Couldn't get your location. It's optional to fill manually.",
+        ),
+    );
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = {
@@ -93,6 +136,8 @@ const Signup = () => {
       password: validatePassword(formData.password),
       phone: validatePhone(formData.phone),
       role: validateRole(formData.role),
+      businessName: validateBusinessName(formData.businessName, formData.role),
+      address: validateAddress(formData.address, formData.role),
     };
 
     setErrors(newErrors);
@@ -103,23 +148,60 @@ const Signup = () => {
       return;
     }
 
+    if (
+      formData.role === "provider" &&
+      (formData.latitude === "" || formData.longitude === "")
+    ) {
+      setErrors((prev) => ({
+        ...prev,
+        submit:
+          "Please set your business location using 'Use current location' before continuing.",
+      }));
+      return;
+    }
+
     setIsSubmitting(true);
     setSuccessMessage("");
+    setErrors((prev) => ({ ...prev, submit: "" }));
 
-    console.log("Submitted Form Data:", formData);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone,
+          role: formData.role === "provider" ? "PROVIDER" : "CUSTOMER",
+          ...(formData.role === "provider" && {
+            businessName: formData.businessName,
+            address: formData.address,
+            latitude: Number(formData.latitude),
+            longitude: Number(formData.longitude),
+          }),
+        }),
+      });
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+      const body = await res.json();
+      if (!res.ok || !body.success) {
+        throw new Error(body.message || "Registration failed");
+      }
+
+      localStorage.setItem("token", body.data.token);
+      localStorage.setItem("user", JSON.stringify(body.data));
+
       setSuccessMessage("Account created successfully!");
-
       setTimeout(() => {
-        if (formData.role === "provider") {
-          navigate("/provider/profile");
-        } else {
-          navigate("/services");
-        }
+        navigate(
+          formData.role === "provider" ? "/provider/profile" : "/services",
+        );
       }, 600);
-    }, 800);
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, submit: err.message }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -133,6 +215,16 @@ const Signup = () => {
         {successMessage && (
           <div className="lsf-success-box" role="status">
             {successMessage}
+          </div>
+        )}
+
+        {errors.submit && (
+          <div
+            className="lsf-error-text"
+            style={{ textAlign: "center", marginBottom: "12px" }}
+            role="alert"
+          >
+            {errors.submit}
           </div>
         )}
 
@@ -276,6 +368,73 @@ const Signup = () => {
               <span className="lsf-error-text">{errors.role}</span>
             )}
           </div>
+
+          {formData.role === "provider" && (
+            <>
+              <div className="lsf-field-group">
+                <label htmlFor="businessName" className="lsf-label">
+                  Business Name
+                </label>
+                <input
+                  id="businessName"
+                  name="businessName"
+                  type="text"
+                  placeholder="e.g. Ramesh Electrical Works"
+                  value={formData.businessName}
+                  onChange={handleChange}
+                  className={`lsf-input ${errors.businessName ? "lsf-input-error" : ""}`}
+                  aria-invalid={!!errors.businessName}
+                />
+                {errors.businessName && (
+                  <span className="lsf-error-text">{errors.businessName}</span>
+                )}
+              </div>
+
+              <div className="lsf-field-group">
+                <label htmlFor="address" className="lsf-label">
+                  Business Address
+                </label>
+                <input
+                  id="address"
+                  name="address"
+                  type="text"
+                  placeholder="Street, area, city"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className={`lsf-input ${errors.address ? "lsf-input-error" : ""}`}
+                  aria-invalid={!!errors.address}
+                />
+                {errors.address && (
+                  <span className="lsf-error-text">{errors.address}</span>
+                )}
+              </div>
+
+              <div className="lsf-field-group">
+                <label className="lsf-label">Business Location</label>
+                <button
+                  type="button"
+                  className="lsf-toggle-btn"
+                  onClick={handleUseCurrentLocation}
+                >
+                  Use current location
+                </button>
+                {locationStatus && (
+                  <span
+                    className="lsf-error-text"
+                    style={{ color: "var(--color-text-subtle)" }}
+                  >
+                    {locationStatus}
+                  </span>
+                )}
+                {formData.latitude !== "" && formData.longitude !== "" && (
+                  <span style={{ fontSize: "0.8rem", marginTop: "4px" }}>
+                    {Number(formData.latitude).toFixed(5)},{" "}
+                    {Number(formData.longitude).toFixed(5)}
+                  </span>
+                )}
+              </div>
+            </>
+          )}
 
           <button
             type="submit"
