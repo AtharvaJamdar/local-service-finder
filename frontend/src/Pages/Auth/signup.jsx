@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+// import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
+import { api } from "../../services/api";
 import "./Auth.css";
 
 // ---------- Validation Helpers ----------
@@ -56,6 +59,7 @@ const validateAddress = (address, role) => {
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -165,31 +169,21 @@ const Signup = () => {
     setErrors((prev) => ({ ...prev, submit: "" }));
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-          phone: formData.phone,
-          role: formData.role === "provider" ? "PROVIDER" : "CUSTOMER",
-          ...(formData.role === "provider" && {
-            businessName: formData.businessName,
-            address: formData.address,
-            latitude: Number(formData.latitude),
-            longitude: Number(formData.longitude),
-          }),
+      const data = await api.post("/auth/register", {
+        name: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        role: formData.role === "provider" ? "PROVIDER" : "CUSTOMER",
+        ...(formData.role === "provider" && {
+          businessName: formData.businessName,
+          address: formData.address,
+          latitude: Number(formData.latitude),
+          longitude: Number(formData.longitude),
         }),
       });
 
-      const body = await res.json();
-      if (!res.ok || !body.success) {
-        throw new Error(body.message || "Registration failed");
-      }
-
-      localStorage.setItem("token", body.data.token);
-      localStorage.setItem("user", JSON.stringify(body.data));
+      login(data); // stores token + user, updates AuthContext
 
       setSuccessMessage("Account created successfully!");
       setTimeout(() => {

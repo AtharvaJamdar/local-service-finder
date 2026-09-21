@@ -1,5 +1,8 @@
-// eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+// import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
+import { api } from "../../services/api";
 import "./Auth.css";
 
 // ---------- Validation Helpers ----------
@@ -21,6 +24,9 @@ const validateRole = (role) => {
 };
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
@@ -58,10 +64,10 @@ const Login = () => {
   };
 
   const handleSignupRedirect = () => {
-    console.log("Navigate to signup page (placeholder function).");
+    navigate("/signup");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = {
@@ -69,7 +75,6 @@ const Login = () => {
       password: validatePassword(password),
       role: validateRole(role),
     };
-
     setErrors(newErrors);
 
     const hasErrors = Object.values(newErrors).some((err) => err !== "");
@@ -80,14 +85,26 @@ const Login = () => {
 
     setIsSubmitting(true);
     setSuccessMessage("");
+    setErrors((prev) => ({ ...prev, submit: "" }));
 
-    const loginData = { email, password, role, rememberMe };
-    console.log("Login Data:", loginData);
+    try {
+      // Note: role here is only used for the UI's own dropdown — the
+      // backend's LoginRequest doesn't take a role, so it isn't sent.
+      const data = await api.post("/auth/login", { email, password });
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+      login(data); // stores token + user, updates AuthContext
+
       setSuccessMessage("Login successful!");
-    }, 800);
+      setTimeout(() => {
+        navigate(
+          data.role === "PROVIDER" ? "/provider/dashboard" : "/services",
+        );
+      }, 400);
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, submit: err.message }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -116,6 +133,16 @@ const Login = () => {
         {forgotMessage && (
           <div className="lsf-forgot-box" role="status">
             {forgotMessage}
+          </div>
+        )}
+
+        {errors.submit && (
+          <div
+            className="lsf-error-text"
+            style={{ textAlign: "center", marginBottom: "12px" }}
+            role="alert"
+          >
+            {errors.submit}
           </div>
         )}
 
