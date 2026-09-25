@@ -14,6 +14,9 @@ import com.localservicefinder.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
+import com.localservicefinder.enums.ProviderStatus;
+import com.localservicefinder.enums.PaymentStatus;
+import com.localservicefinder.repository.PaymentRepository;
 
 import java.util.List;
 import java.util.Set;
@@ -26,6 +29,7 @@ public class BookingService {
     private final ServiceRepository serviceRepository;
     private final ProviderProfileRepository providerProfileRepository;
     private final UserRepository userRepository;
+    private final PaymentRepository paymentRepository;
 
     // Who is allowed to move a booking FROM one status TO another.
     // Anything not listed here is blocked, e.g. COMPLETED -> anything.
@@ -49,6 +53,13 @@ public class BookingService {
 
         if (!Boolean.TRUE.equals(service.getIsActive())) {
             throw new IllegalArgumentException("This service is no longer available");
+        }
+
+        ProviderProfile provider = providerProfileRepository.findById(service.getProviderId())
+                .orElseThrow(() -> new ResourceNotFoundException("Provider not found for this service"));
+
+        if (provider.getStatus() != ProviderStatus.APPROVED) {
+            throw new IllegalArgumentException("This provider is not available for bookings yet");
         }
 
         Booking booking = Booking.builder()
@@ -132,6 +143,10 @@ public class BookingService {
         ProviderProfile provider = providerProfileRepository.findById(booking.getProviderId()).orElse(null);
         com.localservicefinder.entity.Service service = serviceRepository.findById(booking.getServiceId()).orElse(null);
 
+        PaymentStatus paymentStatus = paymentRepository.findByBookingId(booking.getId())
+                .map(payment -> payment.getStatus())
+                .orElse(PaymentStatus.PENDING);
+
         return BookingResponse.builder()
                 .id(booking.getId())
                 .customerId(booking.getUserId())
@@ -145,6 +160,7 @@ public class BookingService {
                 .scheduledAt(booking.getScheduledAt())
                 .address(booking.getAddress())
                 .amount(booking.getAmount())
+                .paymentStatus(paymentStatus)
                 .createdAt(booking.getCreatedAt())
                 .build();
     }

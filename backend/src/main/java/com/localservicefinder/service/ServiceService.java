@@ -13,6 +13,7 @@ import com.localservicefinder.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import com.localservicefinder.enums.ProviderStatus;
 
 import java.util.List;
 
@@ -26,20 +27,30 @@ public class ServiceService {
     private final UserRepository userRepository;
     private final com.localservicefinder.repository.ReviewRepository reviewRepository;
 
-    public List<ServiceResponse> getAllActive() {
-        return serviceRepository.findByIsActiveTrue()
-                .stream().map(this::toResponse).toList();
-    }
 
-    public List<ServiceResponse> getByCategory(Long categoryId) {
-        return serviceRepository.findByCategoryIdAndIsActiveTrue(categoryId)
-                .stream().map(this::toResponse).toList();
-    }
 
     public ServiceResponse getById(Long id) {
         var service = serviceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + id));
+
+        boolean providerApproved = providerProfileRepository.findById(service.getProviderId())
+                .map(p -> p.getStatus() == ProviderStatus.APPROVED)
+                .orElse(false);
+
+        if (!Boolean.TRUE.equals(service.getIsActive()) || !providerApproved) {
+            throw new ResourceNotFoundException("Service not found with id: " + id);
+        }
         return toResponse(service);
+    }
+
+    public List<ServiceResponse> getAllActive() {
+        return serviceRepository.findAllVisible()
+                .stream().map(this::toResponse).toList();
+    }
+
+    public List<ServiceResponse> getByCategory(Long categoryId) {
+        return serviceRepository.findVisibleByCategoryId(categoryId)
+                .stream().map(this::toResponse).toList();
     }
 
     public List<ServiceResponse> getMyServices(Long loggedInUserId) {

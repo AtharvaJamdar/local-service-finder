@@ -1,38 +1,28 @@
-package com.localservicefinder.dto.booking;
+package com.localservicefinder.dto.admin;
 
 import com.localservicefinder.enums.BookingStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import com.localservicefinder.enums.PaymentStatus;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Getter
+@Data
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
-public class BookingResponse {
+public class BookingAdminResponse {
 
     private Long id;
-
-    private Long customerId;
     private String customerName;
-
-    private Long providerId;
     private String providerBusinessName;
-
-    private Long serviceId;
     private String serviceTitle;
-
-
-    private PaymentStatus paymentStatus;
-
     private BookingStatus status;
     private Boolean isEmergency;
     private LocalDateTime scheduledAt;
     private String address;
     private BigDecimal amount;
-
     private LocalDateTime createdAt;
 }
