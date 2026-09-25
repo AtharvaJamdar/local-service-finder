@@ -95,7 +95,7 @@ public class AuthService {
                 .latitude(java.math.BigDecimal.valueOf(request.getLatitude()))
                 .longitude(java.math.BigDecimal.valueOf(request.getLongitude()))
                 .isVerified(false)
-                .status(ProviderStatus.PENDING)
+                .status(ProviderStatus.APPROVED)
                 .build();
 
         providerProfileRepository.save(profile);

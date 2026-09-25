@@ -1,6 +1,9 @@
 package com.localservicefinder.controller;
 
+import com.localservicefinder.dto.admin.AdminStatsResponse;
+import com.localservicefinder.dto.admin.BookingAdminResponse;
 import com.localservicefinder.dto.admin.ProviderAdminResponse;
+import com.localservicefinder.dto.admin.UserAdminResponse;
 import com.localservicefinder.dto.response.ApiResponse;
 import com.localservicefinder.service.AdminService;
 import lombok.RequiredArgsConstructor;
@@ -39,5 +42,26 @@ public class AdminController {
     public ResponseEntity<ApiResponse<ProviderAdminResponse>> rejectProvider(@PathVariable Long id) {
         return ResponseEntity.ok(
                 ApiResponse.success("Provider rejected", adminService.rejectProvider(id)));
+    }
+
+    @GetMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<UserAdminResponse>>> getAllUsers() {
+        return ResponseEntity.ok(
+                ApiResponse.success("All users", adminService.getAllUsers()));
+    }
+
+    @GetMapping("/bookings")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<BookingAdminResponse>>> getAllBookings() {
+        return ResponseEntity.ok(
+                ApiResponse.success("All bookings", adminService.getAllBookings()));
+    }
+
+    @GetMapping("/stats")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<AdminStatsResponse>> getStats() {
+        return ResponseEntity.ok(
+                ApiResponse.success("Admin stats", adminService.getStats()));
     }
 }
