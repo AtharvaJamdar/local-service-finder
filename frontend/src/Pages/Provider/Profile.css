@@ -1,99 +1,123 @@
+/* src/pages/Provider/Profile.css */
 .provider-profile-page {
-  display: flex;
-  justify-content: center;
-  padding: 32px 20px;
-  min-height: calc(100vh - 73px);
-  background: linear-gradient(
-    160deg,
-    var(--background-color) 0%,
-    rgba(156, 213, 255, 0.15) 55%,
-    var(--background-color) 100%
-  );
-  box-sizing: border-box;
-}
-
-.provider-profile-form {
-  width: 100%;
   max-width: 560px;
-  padding: 32px;
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-md);
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background: #ffffff;
+  border: 1px solid rgba(53, 88, 114, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(53, 88, 114, 0.1);
 }
 
-.provider-profile-form h2 {
-  font-size: 1.3rem;
-  background: linear-gradient(
-    135deg,
-    var(--primary-color),
-    var(--secondary-color)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.profile-welcome {
+  font-size: 0.95rem;
+  color: var(--color-primary, #355872);
+  opacity: 0.8;
+  margin-bottom: 0.25rem;
 }
 
-.provider-profile-subtitle {
-  margin-top: 6px;
-  margin-bottom: 20px;
-  font-size: 0.9rem;
-  color: var(--text-muted);
+.provider-profile-page h1 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
 }
 
-.slot-editor-add {
+.earnings-card {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-primary, #355872);
+  color: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(53, 88, 114, 0.25);
 }
 
-.slot-editor-add .form-input {
-  flex: 1 1 140px;
+.earnings-label {
+  font-size: 0.9rem;
+  opacity: 0.85;
 }
 
-.slot-editor-list {
-  margin-top: 14px;
+.earnings-value {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.profile-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 1.25rem;
 }
 
-.slot-editor-day {
-  padding: 10px 12px;
-  border-radius: var(--border-radius-sm);
-  background: rgba(156, 213, 255, 0.15);
-}
-
-.slot-editor-date {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--primary-color);
-}
-
-.slot-editor-chips {
+.profile-form label {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
+  flex-direction: column;
+  font-weight: 500;
+  gap: 0.4rem;
+  color: var(--color-primary, #355872);
 }
 
-.slot-chip {
-  display: inline-flex;
+.profile-form input,
+.profile-form textarea,
+.profile-form select {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(53, 88, 114, 0.25);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #fff;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.profile-form input:focus,
+.profile-form textarea:focus,
+.profile-form select:focus {
+  outline: none;
+  border-color: var(--color-secondary, #7aaace);
+  box-shadow: 0 0 0 3px rgba(122, 170, 206, 0.25);
+}
+
+.location-field {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--white);
-  border: 1px solid var(--secondary-color);
-  font-size: 0.8rem;
-  color: var(--primary-color);
-}
-
-.slot-chip button {
-  color: var(--text-muted);
   font-size: 0.9rem;
-  line-height: 1;
-  cursor: pointer;
+  background: rgba(122, 170, 206, 0.1);
+  padding: 0.7rem 0.9rem;
+  border-radius: 8px;
 }
 
-.slot-chip button:hover {
-  color: #c0392b;
+.location-field button {
+  border: 1px solid var(--color-secondary, #7aaace);
+  background: #fff;
+  color: var(--color-primary, #355872);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.save-btn {
+  background: var(--color-accent, #9cd5ff);
+  color: var(--color-primary, #355872);
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(156, 213, 255, 0.5);
+}
+
+.save-btn:hover {
+  filter: brightness(0.97);
+}
+
+.form-error {
+  color: #b00020;
+}
+
+.form-success {
+  color: #1b7a3d;
 }

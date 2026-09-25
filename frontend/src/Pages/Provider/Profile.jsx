@@ -1,152 +1,203 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Navbar from "../../components/Navbar";
-import SlotEditor from "../../components/Provider/SlotEditor";
-import { setCurrentProvider } from "../../data/providerAuth";
+// src/pages/Provider/Profile.jsx
+import { useEffect, useState } from "react";
+import { api } from "../../services/api";
+import { useAuth } from "../../context/useAuth";
+import Navbar from "../../components/Navbar"; // ASSUMPTION: default export, no required props
 import "./Profile.css";
 
-const CATEGORIES = ["Electrician", "Plumber", "Carpenter", "House Cleaning"];
+const CATEGORIES = ["Electrician", "Plumber", "House Cleaning", "Carpenter"];
 
-const ProviderProfile = () => {
-  const navigate = useNavigate();
+export default function ProviderProfile() {
+  const { user } = useAuth();
+  const displayName = user?.name || "Provider";
 
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState(CATEGORIES[0]);
-  const [phone, setPhone] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [availability, setAvailability] = useState([]);
+  const [form, setForm] = useState({
+    businessName: "",
+    address: "",
+    latitude: null,
+    longitude: null,
+    description: "",
+    category: "",
+  });
 
-  const isComplete =
-    name.trim() &&
-    phone.trim() &&
-    description.trim() &&
-    price.trim() &&
-    availability.length > 0;
+  const [monthlyIncome, setMonthlyIncome] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!isComplete) return;
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const profile = await api.get("/providers/me");
+        setForm({
+          businessName: profile.businessName || "",
+          address: profile.address || "",
+          latitude: profile.latitude ?? null,
+          longitude: profile.longitude ?? null,
+          description: profile.description || "",
+          category: profile.category || "",
+        });
+      } catch (err) {
+        setError("Could not load your profile.");
+      }
 
-    const provider = {
-      id: Date.now(), // temporary local id until backend assigns a real one
-      name,
-      category,
-      phone,
-      description,
-      price,
-      availability,
-      rating: 0,
-      reviews: 0,
-      lat: null,
-      lng: null,
+      try {
+        const earnings = await api.get("/providers/me/earnings?period=month");
+        setMonthlyIncome(earnings.total ?? 0);
+      } catch (err) {
+        setMonthlyIncome(null);
+      }
+
+      setLoading(false);
     };
 
-    setCurrentProvider(provider);
-    navigate("/provider/dashboard");
+    loadProfile();
+  }, []);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
+
+  const handleRecaptureLocation = () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by your browser.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((prev) => ({
+          ...prev,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        }));
+      },
+      () =>
+        setError("Could not capture location. Please allow location access."),
+    );
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      await api.put("/providers/me", {
+        businessName: form.businessName,
+        address: form.address,
+        latitude: form.latitude,
+        longitude: form.longitude,
+        description: form.description,
+        category: form.category, // NOTE: backend ProviderProfile may not have this field yet — confirm with your teammate, otherwise it'll likely be silently ignored by the server
+      });
+      setSuccess("Profile updated successfully.");
+    } catch (err) {
+      setError(err.message || "Failed to update profile.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="profile-loading">Loading profile...</div>
+      </>
+    );
+  }
 
   return (
     <>
       <Navbar />
       <div className="provider-profile-page">
-        <form className="provider-profile-form card" onSubmit={handleSubmit}>
-          <h2>Set up your provider profile</h2>
-          <p className="provider-profile-subtitle">
-            This information is what customers will see when they search for
-            your service.
-          </p>
+        <p className="profile-welcome">Welcome, {displayName}</p>
+        <h1>Business Profile</h1>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="name">
-              Full name
-            </label>
+        <div className="earnings-card">
+          <span className="earnings-label">Monthly Income Generated</span>
+          <span className="earnings-value">
+            {monthlyIncome !== null
+              ? `₹${monthlyIncome.toLocaleString()}`
+              : "—"}
+          </span>
+        </div>
+
+        {error && <p className="form-error">{error}</p>}
+        {success && <p className="form-success">{success}</p>}
+
+        <form onSubmit={handleSubmit} className="profile-form">
+          <label>
+            Business Name
             <input
-              id="name"
-              className="form-input"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Ramesh Kale"
+              type="text"
+              name="businessName"
+              value={form.businessName}
+              onChange={handleChange}
+              required
             />
-          </div>
+          </label>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="category">
-              Service category
-            </label>
+          <label>
+            Category
             <select
-              id="category"
-              className="form-input"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              required
             >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              <option value="" disabled>
+                Select your primary service category
+              </option>
+              {CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
                 </option>
               ))}
             </select>
-          </div>
+          </label>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="phone">
-              Phone number
-            </label>
+          <label>
+            Address
             <input
-              id="phone"
-              className="form-input"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+91 98765 43210"
+              type="text"
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              required
             />
+          </label>
+
+          <div className="location-field">
+            <span>
+              Location:{" "}
+              {form.latitude && form.longitude
+                ? `${form.latitude.toFixed(5)}, ${form.longitude.toFixed(5)}`
+                : "Not set"}
+            </span>
+            <button type="button" onClick={handleRecaptureLocation}>
+              Re-capture Location
+            </button>
           </div>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="description">
-              About you / your service
-            </label>
+          <label>
+            Business Description
             <textarea
-              id="description"
-              className="form-input"
+              name="description"
+              value={form.description}
+              onChange={handleChange}
               rows={4}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="E.g. 8+ years experience in home wiring and repairs…"
+              placeholder="Tell customers what your business does, your experience, and what makes you a good choice..."
             />
-          </div>
+          </label>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="price">
-              Price
-            </label>
-            <input
-              id="price"
-              className="form-input"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="e.g. ₹300/hr"
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Your availability</label>
-            <SlotEditor
-              availability={availability}
-              onChange={setAvailability}
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-primary form-submit"
-            disabled={!isComplete}
-          >
-            Save & Continue to Dashboard
+          <button type="submit" disabled={saving} className="save-btn">
+            {saving ? "Saving..." : "Save Changes"}
           </button>
         </form>
       </div>
     </>
   );
-};
-
-export default ProviderProfile;
+}

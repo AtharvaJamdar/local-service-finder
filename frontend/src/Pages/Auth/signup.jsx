@@ -340,7 +340,7 @@ const Signup = () => {
                   formData.role === "user" ? "lsf-role-card-active" : ""
                 }`}
               >
-                User
+                CUSTOMER
               </div>
               <div
                 onClick={() => handleRoleSelect("provider")}
@@ -355,7 +355,7 @@ const Signup = () => {
                   formData.role === "provider" ? "lsf-role-card-active" : ""
                 }`}
               >
-                Service Provider
+                SERVICE PROVIDER
               </div>
             </div>
             {errors.role && (
