@@ -217,7 +217,7 @@ const Login = () => {
                 }}
                 className={`lsf-role-card ${role === "user" ? "lsf-role-card-active" : ""}`}
               >
-                User
+                CUSTOMER
               </div>
               <div
                 onClick={() => handleRoleSelect("provider")}
@@ -230,7 +230,7 @@ const Login = () => {
                 }}
                 className={`lsf-role-card ${role === "provider" ? "lsf-role-card-active" : ""}`}
               >
-                Service Provider
+                SERVICE PROVIDER
               </div>
             </div>
             {errors.role && (
