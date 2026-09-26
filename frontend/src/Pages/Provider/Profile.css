@@ -121,3 +121,15 @@
 .form-success {
   color: #1b7a3d;
 }
+
+.location-row {
+  display: flex;
+  gap: 1rem;
+}
+.location-row label {
+  flex: 1;
+  font-size: 0.85rem;
+}
+.location-row input {
+  width: 100%;
+}

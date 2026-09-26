@@ -9,6 +9,7 @@ import Tracking from "./Pages/Tracking";
 import ProviderProfile from "./Pages/Provider/Profile";
 import ProviderDashboard from "./Pages/Provider/Dashboard";
 import ProviderJobDetail from "./Pages/Provider/JobDetail";
+import ServiceCreation from "./Pages/Provider/ServiceCreation";
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
       <Route path="/provider/profile" element={<ProviderProfile />} />
       <Route path="/provider/dashboard" element={<ProviderDashboard />} />
       <Route path="/provider/job/:jobId" element={<ProviderJobDetail />} />
+      <Route path="/provider/services" element={<ServiceCreation />} />
     </Routes>
   );
 };

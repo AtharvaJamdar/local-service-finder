@@ -1,4 +1,5 @@
 // src/pages/Provider/Profile.jsx
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { api } from "../../services/api";
 import { useAuth } from "../../context/useAuth";
@@ -9,6 +10,7 @@ const CATEGORIES = ["Electrician", "Plumber", "House Cleaning", "Carpenter"];
 
 export default function ProviderProfile() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const displayName = user?.name || "Provider";
 
   const [form, setForm] = useState({
@@ -93,6 +95,7 @@ export default function ProviderProfile() {
         category: form.category, // NOTE: backend ProviderProfile may not have this field yet — confirm with your teammate, otherwise it'll likely be silently ignored by the server
       });
       setSuccess("Profile updated successfully.");
+      setTimeout(() => navigate("/provider/services"), 600);
     } catch (err) {
       setError(err.message || "Failed to update profile.");
     } finally {
@@ -171,14 +174,46 @@ export default function ProviderProfile() {
           </label>
 
           <div className="location-field">
-            <span>
-              Location:{" "}
-              {form.latitude && form.longitude
-                ? `${form.latitude.toFixed(5)}, ${form.longitude.toFixed(5)}`
-                : "Not set"}
-            </span>
-            <button type="button" onClick={handleRecaptureLocation}>
-              Re-capture Location
+            <div className="location-row">
+              <label>
+                Latitude
+                <input
+                  type="number"
+                  step="any"
+                  name="latitude"
+                  value={form.latitude ?? ""}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      latitude:
+                        e.target.value === "" ? null : Number(e.target.value),
+                    }))
+                  }
+                />
+              </label>
+              <label>
+                Longitude
+                <input
+                  type="number"
+                  step="any"
+                  name="longitude"
+                  value={form.longitude ?? ""}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      longitude:
+                        e.target.value === "" ? null : Number(e.target.value),
+                    }))
+                  }
+                />
+              </label>
+            </div>
+            <button
+              type="button"
+              onClick={handleRecaptureLocation}
+              className="sc-cancel-btn"
+            >
+              Use Current Location Instead
             </button>
           </div>
 

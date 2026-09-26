@@ -1,0 +1,172 @@
+/* src/pages/Provider/ServiceCreation.css */
+.service-creation-page {
+  max-width: 640px;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background: #ffffff;
+  border: 1px solid rgba(53, 88, 114, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(53, 88, 114, 0.1);
+}
+
+.service-creation-page h1 {
+  margin-top: 0;
+}
+
+.service-creation-page h2 {
+  margin-top: 2rem;
+  color: var(--color-primary, #355872);
+}
+
+.sc-empty {
+  color: rgba(53, 88, 114, 0.6);
+  font-style: italic;
+}
+
+.sc-service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.sc-service-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(53, 88, 114, 0.15);
+  border-radius: 10px;
+  background: var(--color-background, #f7f8f0);
+}
+
+.sc-service-info h3 {
+  margin: 0 0 0.2rem;
+  color: var(--color-primary, #355872);
+}
+
+.sc-service-category {
+  font-size: 0.8rem;
+  color: var(--color-secondary, #7aaace);
+  font-weight: 600;
+  margin: 0 0 0.4rem;
+}
+
+.sc-service-desc {
+  font-size: 0.9rem;
+  margin: 0 0 0.4rem;
+  color: #444;
+}
+
+.sc-service-price {
+  font-weight: 600;
+  margin: 0;
+}
+
+.sc-service-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sc-service-actions button {
+  border: 1px solid var(--color-secondary, #7aaace);
+  background: #fff;
+  color: var(--color-primary, #355872);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.sc-delete-btn {
+  border-color: #b00020 !important;
+  color: #b00020 !important;
+}
+
+.sc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.sc-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  gap: 0.4rem;
+  color: var(--color-primary, #355872);
+}
+
+.sc-form input,
+.sc-form textarea,
+.sc-form select {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(53, 88, 114, 0.25);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.sc-form-actions {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.sc-cancel-btn {
+  background: none;
+  border: 1px solid rgba(53, 88, 114, 0.3);
+  border-radius: 8px;
+  padding: 0.8rem 1.2rem;
+  cursor: pointer;
+}
+
+.save-btn {
+  background: var(--color-accent, #9cd5ff);
+  color: var(--color-primary, #355872);
+  padding: 0.8rem 1.4rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.form-error {
+  color: #b00020;
+}
+
+.form-success {
+  color: #1b7a3d;
+}
+
+.sc-loading {
+  text-align: center;
+  padding: 3rem;
+}
+
+.sc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sc-header h1 {
+  margin: 0;
+}
+
+.sc-dashboard-btn {
+  background: var(--color-primary, #355872);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.sc-dashboard-btn:hover {
+  filter: brightness(1.1);
+}
