@@ -5,6 +5,7 @@ const ProviderSidebar = ({
   providers,
   selectedProviderId,
   onSelectProvider,
+  loading = false,
 }) => {
   const navigate = useNavigate();
 
@@ -12,8 +13,14 @@ const ProviderSidebar = ({
     <aside className="provider-sidebar">
       <div className="provider-sidebar-header">
         <h2>Provider details</h2>
-        <p>{providers.length} nearby</p>
+        <p>{loading ? "Loading…" : `${providers.length} nearby`}</p>
       </div>
+
+      {!loading && providers.length === 0 && (
+        <p className="job-section-empty">
+          No providers found for this service yet.
+        </p>
+      )}
 
       <ul className="provider-list">
         {providers.map((provider) => {

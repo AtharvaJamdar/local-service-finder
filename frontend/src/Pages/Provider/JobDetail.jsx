@@ -1,79 +1,87 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
+import { api } from "../../services/api";
 import {
-  providerJobs,
-  updateJobStatus,
-  updateJobAmount,
-} from "../../data/providerJobs";
+  formatDateLabel,
+  formatTimeLabel,
+  formatCurrency,
+  statusInfo,
+} from "../../utils/format";
 import "./JobDetail.css";
 
+// The backend only allows these forward transitions, each triggered by the
+// provider (see BookingService.ALLOWED_TRANSITIONS on the backend).
 const STATUS_FLOW = [
-  "requested",
-  "accepted",
-  "on_the_way",
-  "arrived",
-  "completed",
+  "PENDING",
+  "CONFIRMED",
+  "ON_THE_WAY",
+  "ARRIVED",
+  "COMPLETED",
 ];
-
-const STATUS_LABELS = {
-  requested: "New request",
-  accepted: "Accepted",
-  on_the_way: "On the way",
-  arrived: "Arrived",
-  completed: "Completed",
-  declined: "Declined",
-};
 
 const ProviderJobDetail = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();
-  const job = providerJobs.find((j) => j.id === Number(jobId));
 
-  const [, forceUpdate] = useState(0);
-  const [amount, setAmount] = useState(job?.amount ?? "");
+  const [job, setJob] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadJob = async () => {
+      try {
+        const data = await api.get(`/bookings/${jobId}`);
+        setJob(data);
+      } catch (err) {
+        setError(err.message || "Failed to load this job.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadJob();
+  }, [jobId]);
+
+  const updateStatus = async (status, afterUpdate) => {
+    setUpdating(true);
+    setError("");
+    try {
+      const updated = await api.patch(`/bookings/${jobId}/status`, { status });
+      setJob(updated);
+      if (afterUpdate) afterUpdate();
+    } catch (err) {
+      setError(err.message || "Failed to update this job.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="container" style={{ paddingTop: "24px" }}>
+          <p>Loading job…</p>
+        </div>
+      </>
+    );
+  }
 
   if (!job) {
     return (
       <>
         <Navbar />
         <div className="container" style={{ paddingTop: "24px" }}>
-          <p>Job not found.</p>
+          <p>{error || "Job not found."}</p>
         </div>
       </>
     );
   }
 
-  const refresh = () => forceUpdate((n) => n + 1);
-
-  const handleAccept = () => {
-    updateJobStatus(job.id, "accepted");
-    refresh();
-  };
-
-  const handleDecline = () => {
-    updateJobStatus(job.id, "declined");
-    navigate("/provider/dashboard");
-  };
-
-  const handleStart = () => {
-    updateJobStatus(job.id, "on_the_way");
-    refresh();
-  };
-
-  const handleArrived = () => {
-    updateJobStatus(job.id, "arrived");
-    refresh();
-  };
-
-  const handleComplete = () => {
-    if (!amount.trim()) return;
-    updateJobAmount(job.id, amount.trim());
-    updateJobStatus(job.id, "completed");
-    refresh();
-  };
-
+  const { cssKey, label } = statusInfo(job.status);
   const currentIndex = STATUS_FLOW.indexOf(job.status);
+  const isClosedOut = job.status === "REJECTED" || job.status === "CANCELLED";
 
   return (
     <>
@@ -82,34 +90,43 @@ const ProviderJobDetail = () => {
         <div className="job-detail-card card">
           <div className="job-detail-top">
             <h2>{job.customerName}</h2>
-            <span
-              className={`job-status-badge job-status-badge--${job.status}`}
-            >
-              {STATUS_LABELS[job.status]}
+            <span className={`job-status-badge job-status-badge--${cssKey}`}>
+              {label}
             </span>
           </div>
 
           <ul className="job-detail-meta">
             <li>
+              <span>Service</span>
+              <span>{job.serviceTitle}</span>
+            </li>
+            <li>
               <span>Day</span>
-              <span>{job.date}</span>
+              <span>{formatDateLabel(job.scheduledAt, "short")}</span>
             </li>
             <li>
               <span>Slot</span>
-              <span>{job.slot}</span>
+              <span>{formatTimeLabel(job.scheduledAt)}</span>
             </li>
             <li>
               <span>Location</span>
-              <span>{job.location}</span>
+              <span>{job.address}</span>
+            </li>
+            <li>
+              <span>Amount</span>
+              <span>{formatCurrency(job.amount)}</span>
+            </li>
+            <li>
+              <span>Payment</span>
+              <span>
+                {job.paymentStatus === "PAID" ? "Paid" : "Not paid yet"}
+              </span>
             </li>
           </ul>
 
-          <div className="job-detail-description">
-            <h3>Problem description</h3>
-            <p>{job.description}</p>
-          </div>
+          {error && <p className="form-error">{error}</p>}
 
-          {job.status !== "declined" && (
+          {!isClosedOut && (
             <ul className="job-stepper">
               {STATUS_FLOW.map((status, index) => (
                 <li
@@ -120,7 +137,7 @@ const ProviderJobDetail = () => {
                 >
                   <span className="job-step-dot" />
                   <span className="job-step-label">
-                    {STATUS_LABELS[status]}
+                    {statusInfo(status).label}
                   </span>
                 </li>
               ))}
@@ -128,50 +145,63 @@ const ProviderJobDetail = () => {
           )}
 
           <div className="job-detail-actions">
-            {job.status === "requested" && (
+            {job.status === "PENDING" && (
               <>
-                <button className="btn btn-primary" onClick={handleAccept}>
+                <button
+                  className="btn btn-primary"
+                  disabled={updating}
+                  onClick={() => updateStatus("CONFIRMED")}
+                >
                   Accept
                 </button>
-                <button className="btn job-btn-decline" onClick={handleDecline}>
+                <button
+                  className="btn job-btn-decline"
+                  disabled={updating}
+                  onClick={() =>
+                    updateStatus("REJECTED", () =>
+                      navigate("/provider/dashboard"),
+                    )
+                  }
+                >
                   Decline
                 </button>
               </>
             )}
 
-            {job.status === "accepted" && (
-              <button className="btn btn-primary" onClick={handleStart}>
+            {job.status === "CONFIRMED" && (
+              <button
+                className="btn btn-primary"
+                disabled={updating}
+                onClick={() => updateStatus("ON_THE_WAY")}
+              >
                 Start (On the way)
               </button>
             )}
 
-            {job.status === "on_the_way" && (
-              <button className="btn btn-primary" onClick={handleArrived}>
+            {job.status === "ON_THE_WAY" && (
+              <button
+                className="btn btn-primary"
+                disabled={updating}
+                onClick={() => updateStatus("ARRIVED")}
+              >
                 Mark Arrived
               </button>
             )}
 
-            {job.status === "arrived" && (
-              <div className="job-amount-form">
-                <label className="form-label" htmlFor="amount">
-                  Amount to charge
-                </label>
-                <input
-                  id="amount"
-                  className="form-input"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="e.g. ₹500"
-                />
-                <button className="btn btn-primary" onClick={handleComplete}>
-                  Mark Complete
-                </button>
-              </div>
+            {job.status === "ARRIVED" && (
+              <button
+                className="btn btn-primary"
+                disabled={updating}
+                onClick={() => updateStatus("COMPLETED")}
+              >
+                Mark Complete
+              </button>
             )}
 
-            {job.status === "completed" && (
+            {job.status === "COMPLETED" && (
               <p className="job-completed-note">
-                Job completed. Amount charged: <strong>{job.amount}</strong>
+                Job completed. Amount charged:{" "}
+                <strong>{formatCurrency(job.amount)}</strong>
               </p>
             )}
           </div>

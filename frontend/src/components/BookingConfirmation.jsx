@@ -1,43 +1,44 @@
 import React from "react";
-
-const formatDayLabel = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-IN", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-};
+import {
+  formatDateLabel,
+  formatTimeLabel,
+  formatCurrency,
+} from "../utils/format";
 
 const BookingConfirmation = ({ booking, onClose }) => {
   return (
     <div className="booking-confirmation card">
       <h2>Booking Confirmed 🎉</h2>
       <p>
-        Your request has been sent to <strong>{booking.providerName}</strong>.
+        Your request has been sent to{" "}
+        <strong>{booking.providerBusinessName}</strong>.
       </p>
 
       <ul className="confirmation-list">
         <li>
+          <span>Service</span>
+          <span>{booking.serviceTitle}</span>
+        </li>
+        <li>
           <span>Day</span>
-          <span>{formatDayLabel(booking.date)}</span>
+          <span>{formatDateLabel(booking.scheduledAt, "long")}</span>
         </li>
         <li>
           <span>Time</span>
-          <span>{booking.slot}</span>
+          <span>{formatTimeLabel(booking.scheduledAt)}</span>
         </li>
         <li>
           <span>Location</span>
-          <span>{booking.location}</span>
+          <span>{booking.address}</span>
         </li>
         <li>
-          <span>Problem</span>
-          <span>{booking.description}</span>
+          <span>Amount</span>
+          <span>{formatCurrency(booking.amount)}</span>
         </li>
       </ul>
 
       <button type="button" className="btn btn-primary" onClick={onClose}>
-        Done
+        Continue to Payment
       </button>
     </div>
   );

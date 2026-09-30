@@ -1,21 +1,32 @@
 import React, { useState } from "react";
 
+// Native time input always returns "HH:MM" (24-hour) — this is purely
+// cosmetic for the chip label, the stored value stays "HH:MM" so it's
+// always parseable by utils/format.js's toIsoDateTime.
+const formatSlotLabel = (time) => {
+  const [h, m] = time.split(":").map(Number);
+  const meridiem = h >= 12 ? "PM" : "AM";
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}:${String(m).padStart(2, "0")} ${meridiem}`;
+};
+
 const SlotEditor = ({ availability, onChange }) => {
   const [newDate, setNewDate] = useState("");
   const [newSlot, setNewSlot] = useState("");
 
   const addSlotToDate = () => {
-    if (!newDate || !newSlot.trim()) return;
+    if (!newDate || !newSlot) return;
 
     const existingDay = availability.find((a) => a.date === newDate);
     let updated;
 
     if (existingDay) {
+      if (existingDay.slots.includes(newSlot)) return; // no duplicates
       updated = availability.map((a) =>
-        a.date === newDate ? { ...a, slots: [...a.slots, newSlot.trim()] } : a,
+        a.date === newDate ? { ...a, slots: [...a.slots, newSlot].sort() } : a,
       );
     } else {
-      updated = [...availability, { date: newDate, slots: [newSlot.trim()] }];
+      updated = [...availability, { date: newDate, slots: [newSlot] }];
     }
 
     onChange(updated.sort((a, b) => (a.date > b.date ? 1 : -1)));
@@ -43,9 +54,8 @@ const SlotEditor = ({ availability, onChange }) => {
           onChange={(e) => setNewDate(e.target.value)}
         />
         <input
-          type="text"
+          type="time"
           className="form-input"
-          placeholder="e.g. 9:00 AM"
           value={newSlot}
           onChange={(e) => setNewSlot(e.target.value)}
         />
@@ -69,7 +79,7 @@ const SlotEditor = ({ availability, onChange }) => {
             <div className="slot-editor-chips">
               {day.slots.map((slot) => (
                 <span key={slot} className="slot-chip">
-                  {slot}
+                  {formatSlotLabel(slot)}
                   <button
                     type="button"
                     onClick={() => removeSlot(day.date, slot)}

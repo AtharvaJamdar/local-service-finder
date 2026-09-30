@@ -9,20 +9,21 @@ const formatDayLabel = (dateStr) => {
   });
 };
 
-const BookingForm = ({ provider, onSubmit }) => {
+const BookingForm = ({ provider, onSubmit, submitting = false }) => {
   const [selectedDate, setSelectedDate] = useState(
     provider.availability[0]?.date ?? null,
   );
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [location, setLocation] = useState(null);
-  const [locationError, setLocationError] = useState(null);
+  const [locationError, setLocationError] = useState(() =>
+    !navigator.geolocation
+      ? "Geolocation isn't supported by this browser."
+      : null,
+  );
   const [description, setDescription] = useState("");
 
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setLocationError("Geolocation isn't supported by this browser.");
-      return;
-    }
+    if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (pos) =>
         setLocation(
@@ -47,7 +48,7 @@ const BookingForm = ({ provider, onSubmit }) => {
     if (
       !selectedDate ||
       !selectedSlot ||
-      !location.trim() ||
+      !location?.trim() ||
       !description.trim()
     )
       return;
@@ -130,8 +131,12 @@ const BookingForm = ({ provider, onSubmit }) => {
         />
       </div>
 
-      <button type="submit" className="btn btn-primary form-submit">
-        Confirm Booking
+      <button
+        type="submit"
+        className="btn btn-primary form-submit"
+        disabled={submitting}
+      >
+        {submitting ? "Booking…" : "Confirm Booking"}
       </button>
     </form>
   );
