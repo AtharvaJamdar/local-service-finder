@@ -12,10 +12,13 @@ import ProviderProfile from "./Pages/Provider/Profile";
 import ProviderDashboard from "./Pages/Provider/Dashboard";
 import ProviderJobDetail from "./Pages/Provider/JobDetail";
 import ServiceCreation from "./Pages/Provider/ServiceCreation";
+import Landing from "./Pages/Landing";
+import Review from "./Pages/Review";
 
 const App = () => {
   return (
     <Routes>
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/services" element={<Services />} />
@@ -24,6 +27,7 @@ const App = () => {
       <Route path="/booking/:serviceId" element={<Booking />} />
       <Route path="/payment/:bookingId" element={<Payment />} />
       <Route path="/tracking/:bookingId" element={<Tracking />} />
+      <Route path="/review/:bookingId" element={<Review />} />
       <Route path="/provider/profile" element={<ProviderProfile />} />
       <Route path="/provider/dashboard" element={<ProviderDashboard />} />
       <Route path="/provider/job/:jobId" element={<ProviderJobDetail />} />
