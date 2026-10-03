@@ -81,7 +81,7 @@ const Booking = () => {
   };
 
   const handleConfirmationClose = () => {
-    navigate(`/payment/${confirmedBooking.id}`);
+    navigate(`/tracking/${confirmedBooking.id}`);
   };
 
   if (loading) {

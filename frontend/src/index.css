@@ -522,3 +522,62 @@ p {
     height: 180px;
   }
 }
+
+/* ---------- Navbar additions ---------- */
+.navbar-btn {
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.navbar-link.active {
+  opacity: 1;
+}
+
+.navbar-link.active::after {
+  width: 100%;
+}
+
+.navbar-user {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .navbar-toggle {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--primary-color);
+    cursor: pointer;
+  }
+
+  .navbar-links.navbar-links-open {
+    display: flex;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 24px 20px;
+    background: var(--background-color);
+    border-bottom: 1px solid rgba(53, 88, 114, 0.1);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar-user {
+    display: none;
+  }
+}

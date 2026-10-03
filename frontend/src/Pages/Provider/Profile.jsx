@@ -45,9 +45,21 @@ export default function ProviderProfile() {
       }
 
       try {
-        const earnings = await api.get("/providers/me/earnings?period=month");
-        setMonthlyIncome(earnings.total ?? 0);
-      } catch (err) {
+        const jobs = await api.get("/bookings/provider");
+        const now = new Date();
+        const total = jobs
+          .filter((b) => {
+            if (b.status !== "COMPLETED" || b.paymentStatus !== "PAID")
+              return false;
+            const d = new Date(b.scheduledAt);
+            return (
+              d.getMonth() === now.getMonth() &&
+              d.getFullYear() === now.getFullYear()
+            );
+          })
+          .reduce((sum, b) => sum + Number(b.amount || 0), 0);
+        setMonthlyIncome(total);
+      } catch {
         setMonthlyIncome(null);
       }
 

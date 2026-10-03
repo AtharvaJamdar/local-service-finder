@@ -36,6 +36,10 @@ export default function Payment() {
   }, [bookingId]);
 
   const handlePay = async () => {
+    if (booking?.status !== "COMPLETED") {
+      setError("You can pay once the provider marks the job as completed.");
+      return;
+    }
     setError("");
     setStatus("processing");
 
@@ -165,7 +169,14 @@ export default function Payment() {
               <button
                 type="button"
                 className="payment-secondary-link"
-                onClick={() => navigate(`/tracking/${bookingId}`)}
+                onClick={() =>
+                  navigate(`/review/${bookingId}`, {
+                    state: {
+                      providerId: booking.providerId,
+                      providerName: booking.providerBusinessName,
+                    },
+                  })
+                }
               >
                 Track this booking instead
               </button>

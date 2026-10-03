@@ -18,9 +18,13 @@ const BookingRow = ({ booking, onCancel, cancelling }) => {
   const navigate = useNavigate();
   const { cssKey, label } = statusInfo(booking.status);
   const canCancel = CANCELLABLE_STATUSES.includes(booking.status);
+
+  // Backend only creates a payment order once the booking is COMPLETED,
+  // and only allows a review once it is COMPLETED (one review per booking).
   const canPay =
-    booking.paymentStatus === "PENDING" &&
-    !["REJECTED", "CANCELLED"].includes(booking.status);
+    booking.status === "COMPLETED" && booking.paymentStatus === "PENDING";
+  const canReview =
+    booking.status === "COMPLETED" && booking.paymentStatus === "PAID";
 
   return (
     <div className="mb-row card">
@@ -63,6 +67,7 @@ const BookingRow = ({ booking, onCancel, cancelling }) => {
         >
           Track
         </button>
+
         {canPay && (
           <button
             type="button"
@@ -72,6 +77,24 @@ const BookingRow = ({ booking, onCancel, cancelling }) => {
             Pay Now
           </button>
         )}
+
+        {canReview && (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() =>
+              navigate(`/review/${booking.id}`, {
+                state: {
+                  providerId: booking.providerId,
+                  providerName: booking.providerBusinessName,
+                },
+              })
+            }
+          >
+            Leave Review
+          </button>
+        )}
+
         {canCancel && (
           <button
             type="button"
@@ -154,7 +177,7 @@ const MyBookings = () => {
             </p>
           )}
 
-          {!loading && !error && bookings.length > 0 && (
+          {!loading && bookings.length > 0 && (
             <>
               {active.length > 0 && (
                 <section className="mb-section">

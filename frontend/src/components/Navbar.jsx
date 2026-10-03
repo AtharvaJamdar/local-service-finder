@@ -1,50 +1,102 @@
 import React, { useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
+
+const LINKS = {
+  GUEST: [
+    { to: "/", label: "Home", end: true },
+    { to: "/services", label: "Services" },
+  ],
+  CUSTOMER: [
+    { to: "/", label: "Home", end: true },
+    { to: "/services", label: "Services" },
+    { to: "/my-bookings", label: "My Bookings" },
+  ],
+  PROVIDER: [
+    { to: "/provider/dashboard", label: "Dashboard" },
+    { to: "/provider/services", label: "My Services" },
+    { to: "/provider/profile", label: "Profile" },
+  ],
+  ADMIN: [],
+};
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
-  const navLinks = [
-    { label: "Home", href: "#" },
-    { label: "Services", href: "#" },
-    { label: "Features", href: "#" },
-    { label: "How It Works", href: "#" },
-    { label: "About", href: "#" },
-  ];
+  const role = isAuthenticated ? user?.role : "GUEST";
+  const links = LINKS[role] || LINKS.GUEST;
+  const homePath = role === "PROVIDER" ? "/provider/dashboard" : "/";
+
+  const closeMenu = () => setMenuOpen(false);
+
+  const handleLogout = () => {
+    closeMenu();
+    logout();
+    navigate("/");
+  };
 
   return (
     <header className="navbar">
       <div className="navbar-container">
-        <div className="navbar-brand">
+        <Link to={homePath} className="navbar-brand" onClick={closeMenu}>
           <span className="navbar-logo" aria-hidden="true">
             🔧
           </span>
           <span>Local Service Finder</span>
-        </div>
+        </Link>
 
         <nav className={`navbar-links ${menuOpen ? "navbar-links-open" : ""}`}>
-          {navLinks.map((link) => (
-            <a key={link.label} className="navbar-link" href={link.href}>
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              end={link.end}
+              onClick={closeMenu}
+              className={({ isActive }) =>
+                isActive ? "navbar-link active" : "navbar-link"
+              }
+            >
               {link.label}
-            </a>
+            </NavLink>
           ))}
         </nav>
 
         <div className="navbar-actions">
-          <a className="navbar-login" href="/login">
-            Login
-          </a>
-          <a className="navbar-signup" href="/signup">
-            Sign Up
-          </a>
+          {isAuthenticated ? (
+            <>
+              <span className="navbar-user" title={user?.email}>
+                {user?.name}
+              </span>
+              <button
+                type="button"
+                className="navbar-login navbar-btn"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="navbar-login" onClick={closeMenu}>
+                Login
+              </Link>
+              <Link to="/signup" className="navbar-signup" onClick={closeMenu}>
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
 
         <button
           type="button"
           className="navbar-toggle"
           aria-label="Toggle menu"
+          aria-expanded={menuOpen}
           onClick={() => setMenuOpen((prev) => !prev)}
         >
-          ☰
+          {menuOpen ? "✕" : "☰"}
         </button>
       </div>
     </header>

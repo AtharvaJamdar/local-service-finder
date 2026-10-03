@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-// import { useAuth } from "../../context/AuthContext";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { api } from "../../services/api";
 import "./Auth.css";
@@ -25,6 +24,7 @@ const validateRole = (role) => {
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -52,7 +52,7 @@ const Login = () => {
 
   const handleRoleSelect = (selectedRole) => {
     setRole(selectedRole);
-    setErrors((prev) => ({ ...prev, role: "" }));
+    setErrors((prev) => ({ ...prev, role: "", submit: "" }));
   };
 
   const togglePasswordVisibility = () => {
@@ -88,16 +88,28 @@ const Login = () => {
     setErrors((prev) => ({ ...prev, submit: "" }));
 
     try {
-      // Note: role here is only used for the UI's own dropdown — the
-      // backend's LoginRequest doesn't take a role, so it isn't sent.
       const data = await api.post("/auth/login", { email, password });
+
+      // --- Optional: make the "I am a" selector match the real account ---
+      const selectedRole = role === "provider" ? "PROVIDER" : "CUSTOMER";
+      if (data.role !== "ADMIN" && data.role !== selectedRole) {
+        setErrors((prev) => ({
+          ...prev,
+          submit: `This account is registered as a ${
+            data.role === "PROVIDER" ? "service provider" : "customer"
+          }. Please select the correct account type.`,
+        }));
+        return;
+      }
+      // --- end optional block ---
 
       login(data); // stores token + user, updates AuthContext
 
       setSuccessMessage("Login successful!");
       setTimeout(() => {
         navigate(
-          data.role === "PROVIDER" ? "/provider/dashboard" : "/services",
+          location.state?.from ||
+            (data.role === "PROVIDER" ? "/provider/dashboard" : "/services"),
         );
       }, 400);
     } catch (err) {

@@ -80,16 +80,17 @@ const TrackingStatus = ({ provider, booking }) => {
         </ul>
       )}
 
-      {booking.paymentStatus === "PENDING" && !isTerminatedEarly && (
-        <button
-          type="button"
-          className="btn btn-primary"
-          style={{ marginBottom: "12px" }}
-          onClick={() => navigate(`/payment/${booking.id}`)}
-        >
-          Pay Now
-        </button>
-      )}
+      {booking.status === "COMPLETED" &&
+        booking.paymentStatus === "PENDING" && (
+          <button
+            type="button"
+            className="btn btn-primary"
+            style={{ marginBottom: "12px" }}
+            onClick={() => navigate(`/payment/${booking.id}`)}
+          >
+            Pay Now
+          </button>
+        )}
 
       <div className="tracking-contact">
         <span>{provider.phone}</span>

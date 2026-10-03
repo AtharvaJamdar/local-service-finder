@@ -3,18 +3,20 @@ import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { api } from "../services/api";
 import "./Review.css";
+import Navbar from "../components/Navbar";
 
 // ---- Response mapping --------------------------------------------------
-// Adjust the field names here if your ReviewResponse DTO differs.
+// Matches the backend ReviewResponse:
+// { id, bookingId, customerId, customerName, providerId, rating, comment, createdAt }
 const toList = (data) =>
   Array.isArray(data) ? data : Array.isArray(data?.content) ? data.content : [];
 
 const normalize = (r) => ({
   id: r.id,
-  name: r.customerName ?? r.reviewerName ?? r.userName ?? "Customer",
+  name: r.customerName ?? "Customer",
   rating: Number(r.rating) || 0,
-  text: r.comment ?? r.text ?? "",
-  createdAt: r.createdAt ?? r.created_at ?? null,
+  text: r.comment ?? "",
+  createdAt: r.createdAt ?? null,
 });
 
 const formatDate = (value) => {
@@ -39,9 +41,15 @@ export default function Review() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
-  // Optional: pass these via navigate(`/review/${id}`, { state: {...} })
-  const providerId = state?.providerId ?? null;
-  const providerName = state?.providerName ?? "";
+  // The booking is the source of truth. Route state (from My Bookings /
+  // Payment) is only used to show names instantly while it loads.
+  const [booking, setBooking] = useState(null);
+  const [loadingBooking, setLoadingBooking] = useState(true);
+  const [bookingError, setBookingError] = useState("");
+
+  const providerId = booking?.providerId ?? state?.providerId ?? null;
+  const providerName =
+    booking?.providerBusinessName ?? state?.providerName ?? "";
 
   const [reviews, setReviews] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
@@ -56,7 +64,29 @@ export default function Review() {
   const [submitError, setSubmitError] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  // Load the provider's reviews (only when we know which provider)
+  // Load the booking (GET /bookings/{id}) to know the provider and status
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingBooking(true);
+    setBookingError("");
+    api
+      .get(`/bookings/${bookingId}`)
+      .then((data) => {
+        if (!cancelled) setBooking(data);
+      })
+      .catch((err) => {
+        if (!cancelled)
+          setBookingError(err.message || "Couldn't load this booking.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingBooking(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [bookingId]);
+
+  // Load the provider's reviews (GET /providers/{id}/reviews — public)
   useEffect(() => {
     if (!providerId) return;
     let cancelled = false;
@@ -133,17 +163,82 @@ export default function Review() {
     }
   };
 
+  const canReview = booking?.status === "COMPLETED";
+
+  const renderFormArea = () => {
+    if (submitted) {
+      return (
+        <div className="rv-banner rv-banner-success" role="status">
+          <span>Thank you! Your review has been submitted.</span>
+          <button
+            type="button"
+            className="rv-btn"
+            onClick={() => navigate("/my-bookings")}
+          >
+            Back to My Bookings
+          </button>
+        </div>
+      );
+    }
+
+    if (loadingBooking) {
+      return <div className="rv-banner">Loading booking…</div>;
+    }
+
+    if (bookingError) {
+      return (
+        <div className="rv-banner" role="alert">
+          {bookingError}
+        </div>
+      );
+    }
+
+    if (!canReview) {
+      return (
+        <div className="rv-banner">
+          You can review this service once the provider marks the job as
+          completed. <Link to="/my-bookings">Back to My Bookings</Link>
+        </div>
+      );
+    }
+
+    return (
+      <form className="rv-form" onSubmit={submitReview}>
+        <div className="rv-stars-input" role="radiogroup" aria-label="Rating">
+          {[1, 2, 3, 4, 5].map((s) => (
+            <button
+              type="button"
+              key={s}
+              className={s <= draft.rating ? "on" : ""}
+              aria-label={`${s} star${s > 1 ? "s" : ""}`}
+              onClick={() => setDraft((d) => ({ ...d, rating: s }))}
+            >
+              ★
+            </button>
+          ))}
+        </div>
+        <textarea
+          placeholder="Share details about your experience..."
+          rows={3}
+          maxLength={1000}
+          value={draft.comment}
+          onChange={(e) => setDraft((d) => ({ ...d, comment: e.target.value }))}
+        />
+        {submitError && (
+          <div className="rv-form-error" role="alert">
+            {submitError}
+          </div>
+        )}
+        <button className="rv-btn" type="submit" disabled={submitting}>
+          {submitting ? "Submitting..." : "Submit Review"}
+        </button>
+      </form>
+    );
+  };
+
   return (
     <div className="rv-page">
-      <nav className="rv-nav">
-        <Link to="/" className="rv-logo">
-          Local Service Finder
-        </Link>
-        <div>
-          <Link to="/services">Services</Link>
-          <Link to="/my-bookings">My Bookings</Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <section className="rv-hero">
         <h1>Rate Your Experience</h1>
@@ -160,50 +255,7 @@ export default function Review() {
         </div>
       )}
 
-      {submitted ? (
-        <div className="rv-banner rv-banner-success" role="status">
-          <span>Thank you! Your review has been submitted.</span>
-          <button
-            type="button"
-            className="rv-btn"
-            onClick={() => navigate("/my-bookings")}
-          >
-            Back to My Bookings
-          </button>
-        </div>
-      ) : (
-        <form className="rv-form" onSubmit={submitReview}>
-          <div className="rv-stars-input" role="radiogroup" aria-label="Rating">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <button
-                type="button"
-                key={s}
-                className={s <= draft.rating ? "on" : ""}
-                aria-label={`${s} star${s > 1 ? "s" : ""}`}
-                onClick={() => setDraft((d) => ({ ...d, rating: s }))}
-              >
-                ★
-              </button>
-            ))}
-          </div>
-          <textarea
-            placeholder="Share details about your experience..."
-            rows={3}
-            value={draft.comment}
-            onChange={(e) =>
-              setDraft((d) => ({ ...d, comment: e.target.value }))
-            }
-          />
-          {submitError && (
-            <div className="rv-form-error" role="alert">
-              {submitError}
-            </div>
-          )}
-          <button className="rv-btn" type="submit" disabled={submitting}>
-            {submitting ? "Submitting..." : "Submit Review"}
-          </button>
-        </form>
-      )}
+      {renderFormArea()}
 
       {providerId && (
         <>

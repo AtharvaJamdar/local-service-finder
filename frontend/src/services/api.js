@@ -12,9 +12,22 @@ async function request(path, options = {}) {
     },
   });
 
-  const body = await res.json();
-  if (!res.ok || !body.success) {
-    throw new Error(body.message || `Request failed: ${res.status}`);
+  let body = null;
+  try {
+    body = await res.json();
+  } catch {
+    // empty or non-JSON body
+  }
+
+  if (res.status === 401 && token && !path.startsWith("/auth/")) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.assign("/login");
+    throw new Error("Your session has expired. Please log in again.");
+  }
+
+  if (!res.ok || !body?.success) {
+    throw new Error(body?.message || `Request failed: ${res.status}`);
   }
   return body.data;
 }
