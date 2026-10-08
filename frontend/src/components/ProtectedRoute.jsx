@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import { homeFor } from "../utils/roleHome";
 
 export default function ProtectedRoute({ roles, children }) {
   const { user, isAuthenticated } = useAuth();
@@ -10,12 +11,7 @@ export default function ProtectedRoute({ roles, children }) {
   }
 
   if (roles && !roles.includes(user.role)) {
-    return (
-      <Navigate
-        to={user.role === "PROVIDER" ? "/provider/dashboard" : "/services"}
-        replace
-      />
-    );
+    return <Navigate to={homeFor(user.role)} replace />;
   }
 
   return children;

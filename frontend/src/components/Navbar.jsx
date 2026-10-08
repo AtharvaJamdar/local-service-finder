@@ -17,7 +17,11 @@ const LINKS = {
     { to: "/provider/services", label: "My Services" },
     { to: "/provider/profile", label: "Profile" },
   ],
-  ADMIN: [],
+  ADMIN: [
+    { to: "/admin/dashboard", label: "Dashboard" },
+    { to: "/admin/users", label: "Users" },
+    { to: "/admin/bookings", label: "Bookings" },
+  ],
 };
 
 const Navbar = () => {
@@ -27,7 +31,12 @@ const Navbar = () => {
 
   const role = isAuthenticated ? user?.role : "GUEST";
   const links = LINKS[role] || LINKS.GUEST;
-  const homePath = role === "PROVIDER" ? "/provider/dashboard" : "/";
+  const homePath =
+    role === "PROVIDER"
+      ? "/provider/dashboard"
+      : role === "ADMIN"
+        ? "/admin/dashboard"
+        : "/";
 
   const closeMenu = () => setMenuOpen(false);
 

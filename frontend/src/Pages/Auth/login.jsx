@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { api } from "../../services/api";
 import "./Auth.css";
+import { homeFor } from "../../utils/roleHome";
 
 // ---------- Validation Helpers ----------
 const validateEmail = (email) => {
@@ -107,10 +108,7 @@ const Login = () => {
 
       setSuccessMessage("Login successful!");
       setTimeout(() => {
-        navigate(
-          location.state?.from ||
-            (data.role === "PROVIDER" ? "/provider/dashboard" : "/services"),
-        );
+        navigate(location.state?.from || homeFor(data.role));
       }, 400);
     } catch (err) {
       setErrors((prev) => ({ ...prev, submit: err.message }));

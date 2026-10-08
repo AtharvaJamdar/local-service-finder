@@ -41,21 +41,86 @@ export default function Review() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
-  // The booking is the source of truth. Route state (from My Bookings /
-  // Payment) is only used to show names instantly while it loads.
-  const [booking, setBooking] = useState(null);
-  const [loadingBooking, setLoadingBooking] = useState(true);
-  const [bookingError, setBookingError] = useState("");
+  // ---- Booking (GET /bookings/{id}) -------------------------------------
+  // The result is stored together with the id it was fetched for, so
+  // "loading" is derived (result id !== current id) instead of being set
+  // synchronously inside the effect.
+  const [bookingResult, setBookingResult] = useState({
+    id: null,
+    data: null,
+    error: "",
+  });
+
+  const bookingLoaded = bookingResult.id === bookingId;
+  const loadingBooking = !bookingLoaded;
+  const booking = bookingLoaded ? bookingResult.data : null;
+  const bookingError = bookingLoaded ? bookingResult.error : "";
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get(`/bookings/${bookingId}`)
+      .then((data) => {
+        if (!cancelled) setBookingResult({ id: bookingId, data, error: "" });
+      })
+      .catch((err) => {
+        if (!cancelled)
+          setBookingResult({
+            id: bookingId,
+            data: null,
+            error: err.message || "Couldn't load this booking.",
+          });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [bookingId]);
 
   const providerId = booking?.providerId ?? state?.providerId ?? null;
   const providerName =
     booking?.providerBusinessName ?? state?.providerName ?? "";
 
-  const [reviews, setReviews] = useState([]);
-  const [loadingList, setLoadingList] = useState(false);
-  const [listError, setListError] = useState("");
+  // ---- Provider reviews (GET /providers/{id}/reviews — public) ----------
   const [reloadKey, setReloadKey] = useState(0);
+  const listKey = providerId ? `${providerId}:${reloadKey}` : null;
 
+  const [listResult, setListResult] = useState({
+    key: null,
+    items: [],
+    error: "",
+  });
+
+  const loadingList = !!listKey && listResult.key !== listKey;
+  const reviews = listResult.items;
+  const listError = listResult.key === listKey ? listResult.error : "";
+
+  useEffect(() => {
+    if (!listKey) return;
+    let cancelled = false;
+    api
+      .get(`/providers/${providerId}/reviews`)
+      .then((data) => {
+        if (!cancelled)
+          setListResult({
+            key: listKey,
+            items: toList(data).map(normalize),
+            error: "",
+          });
+      })
+      .catch((err) => {
+        if (!cancelled)
+          setListResult({
+            key: listKey,
+            items: [],
+            error: err.message || "Couldn't load reviews.",
+          });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [listKey, providerId]);
+
+  // ---- UI state ---------------------------------------------------------
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("recent");
 
@@ -63,50 +128,6 @@ export default function Review() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitted, setSubmitted] = useState(false);
-
-  // Load the booking (GET /bookings/{id}) to know the provider and status
-  useEffect(() => {
-    let cancelled = false;
-    setLoadingBooking(true);
-    setBookingError("");
-    api
-      .get(`/bookings/${bookingId}`)
-      .then((data) => {
-        if (!cancelled) setBooking(data);
-      })
-      .catch((err) => {
-        if (!cancelled)
-          setBookingError(err.message || "Couldn't load this booking.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingBooking(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [bookingId]);
-
-  // Load the provider's reviews (GET /providers/{id}/reviews — public)
-  useEffect(() => {
-    if (!providerId) return;
-    let cancelled = false;
-    setLoadingList(true);
-    setListError("");
-    api
-      .get(`/providers/${providerId}/reviews`)
-      .then((data) => {
-        if (!cancelled) setReviews(toList(data).map(normalize));
-      })
-      .catch((err) => {
-        if (!cancelled) setListError(err.message);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingList(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [providerId, reloadKey]);
 
   const avg = useMemo(
     () =>
@@ -154,7 +175,7 @@ export default function Review() {
         comment: draft.comment.trim(),
       });
       setSubmitted(true);
-      setReloadKey((k) => k + 1); // refresh the list
+      setReloadKey((k) => k + 1); // refetch the list
     } catch (err) {
       // e.g. booking not completed yet, or already reviewed
       setSubmitError(err.message);

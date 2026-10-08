@@ -15,12 +15,18 @@ import ProviderJobDetail from "./Pages/Provider/JobDetail";
 import ServiceCreation from "./Pages/Provider/ServiceCreation";
 import Landing from "./Pages/Landing";
 import Review from "./Pages/Review";
+import AdminDashboard from "./Pages/Admin/AdminDashboard";
+import AdminUsers from "./Pages/Admin/AdminUsers";
+import AdminBookings from "./Pages/Admin/AdminBookings";
 
 const customerOnly = (element) => (
   <ProtectedRoute roles={["CUSTOMER"]}>{element}</ProtectedRoute>
 );
 const providerOnly = (element) => (
   <ProtectedRoute roles={["PROVIDER"]}>{element}</ProtectedRoute>
+);
+const adminOnly = (element) => (
+  <ProtectedRoute roles={["ADMIN"]}>{element}</ProtectedRoute>
 );
 
 const App = () => {
@@ -57,6 +63,11 @@ const App = () => {
         path="/provider/services"
         element={providerOnly(<ServiceCreation />)}
       />
+
+      {/* Admin only */}
+      <Route path="/admin/dashboard" element={adminOnly(<AdminDashboard />)} />
+      <Route path="/admin/users" element={adminOnly(<AdminUsers />)} />
+      <Route path="/admin/bookings" element={adminOnly(<AdminBookings />)} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
