@@ -1,5 +1,12 @@
 package com.localservicefinder.service;
 
+import com.localservicefinder.repository.ReviewRepository.ProviderRatingSummary;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.localservicefinder.dto.service.ServiceRequest;
 import com.localservicefinder.dto.service.ServiceResponse;
 import com.localservicefinder.entity.ProviderProfile;
@@ -44,19 +51,16 @@ public class ServiceService {
     }
 
     public List<ServiceResponse> getAllActive() {
-        return serviceRepository.findAllVisible()
-                .stream().map(this::toResponse).toList();
+        return toResponses(serviceRepository.findAllVisible());
     }
 
     public List<ServiceResponse> getByCategory(Long categoryId) {
-        return serviceRepository.findVisibleByCategoryId(categoryId)
-                .stream().map(this::toResponse).toList();
+        return toResponses(serviceRepository.findVisibleByCategoryId(categoryId));
     }
 
     public List<ServiceResponse> getMyServices(Long loggedInUserId) {
         ProviderProfile provider = getProviderProfileOrThrow(loggedInUserId);
-        return serviceRepository.findByProviderId(provider.getId())
-                .stream().map(this::toResponse).toList();
+        return toResponses(serviceRepository.findByProviderId(provider.getId()));
     }
 
     public ServiceResponse create(Long loggedInUserId, ServiceRequest request) {
@@ -115,8 +119,7 @@ public class ServiceService {
     }
 
     public List<ServiceResponse> search(String keyword, Long categoryId) {
-        return serviceRepository.search(keyword, categoryId)
-                .stream().map(this::toResponse).toList();
+        return toResponses(serviceRepository.search(keyword, categoryId));
     }
 
     private ServiceResponse toResponse(com.localservicefinder.entity.Service service) {
@@ -162,5 +165,57 @@ public class ServiceService {
                 .categoryName(categoryName)
                 .createdAt(service.getCreatedAt())
                 .build();
+    }
+
+    private List<ServiceResponse> toResponses(List<com.localservicefinder.entity.Service> services) {
+        if (services.isEmpty()) {
+            return List.of();
+        }
+
+        Set<Long> providerIds = services.stream()
+                .map(com.localservicefinder.entity.Service::getProviderId)
+                .collect(Collectors.toSet());
+
+        Map<Long, ProviderProfile> providers = providerProfileRepository.findAllById(providerIds).stream()
+                .collect(Collectors.toMap(ProviderProfile::getId, Function.identity()));
+
+        Set<Long> userIds = providers.values().stream()
+                .map(ProviderProfile::getUserId)
+                .collect(Collectors.toSet());
+
+        Map<Long, User> users = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+
+        Map<Long, String> categoryNames = categoryRepository.findAll().stream()
+                .collect(Collectors.toMap(ServiceCategory::getId, ServiceCategory::getName));
+
+        Map<Long, ProviderRatingSummary> ratings = reviewRepository.summarizeByProviderIds(providerIds).stream()
+                .collect(Collectors.toMap(ProviderRatingSummary::getProviderId, Function.identity()));
+
+        return services.stream().map(service -> {
+            ProviderProfile provider = providers.get(service.getProviderId());
+            User user = provider != null ? users.get(provider.getUserId()) : null;
+            ProviderRatingSummary rating = ratings.get(service.getProviderId());
+
+            return ServiceResponse.builder()
+                    .id(service.getId())
+                    .title(service.getTitle())
+                    .description(service.getDescription())
+                    .price(service.getPrice())
+                    .isActive(service.getIsActive())
+                    .providerId(service.getProviderId())
+                    .providerName(user != null ? user.getFullName() : null)
+                    .providerPhone(user != null ? user.getPhone() : null)
+                    .providerLatitude(provider != null && provider.getLatitude() != null
+                            ? provider.getLatitude().doubleValue() : null)
+                    .providerLongitude(provider != null && provider.getLongitude() != null
+                            ? provider.getLongitude().doubleValue() : null)
+                    .providerRatingAverage(rating != null ? rating.getAverage() : null)
+                    .providerReviewCount(rating != null ? rating.getReviewCount().intValue() : 0)
+                    .categoryId(service.getCategoryId())
+                    .categoryName(categoryNames.get(service.getCategoryId()))
+                    .createdAt(service.getCreatedAt())
+                    .build();
+        }).toList();
     }
 }
