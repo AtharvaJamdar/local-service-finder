@@ -1,5 +1,10 @@
 package com.localservicefinder.service;
 
+import com.localservicefinder.entity.Payment;
+
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import com.localservicefinder.dto.booking.BookingRequest;
 import com.localservicefinder.dto.booking.BookingResponse;
 import com.localservicefinder.entity.Booking;
@@ -77,16 +82,14 @@ public class BookingService {
     }
 
     public List<BookingResponse> getMyBookingsAsCustomer(Long customerUserId) {
-        return bookingRepository.findByUserId(customerUserId)
-                .stream().map(this::toResponse).toList();
+        return toResponses(bookingRepository.findByUserId(customerUserId));
     }
 
     public List<BookingResponse> getMyBookingsAsProvider(Long providerUserId) {
         ProviderProfile provider = providerProfileRepository.findByUserId(providerUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("No provider profile found for this account"));
 
-        return bookingRepository.findByProviderId(provider.getId())
-                .stream().map(this::toResponse).toList();
+        return toResponses(bookingRepository.findByProviderId(provider.getId()));
     }
 
     public BookingResponse getById(Long loggedInUserId, Long bookingId) {
@@ -165,5 +168,48 @@ public class BookingService {
                 .build();
     }
 
+    private List<BookingResponse> toResponses(List<Booking> bookings) {
+        if (bookings.isEmpty()) {
+            return List.of();
+        }
+
+        Set<Long> bookingIds = bookings.stream().map(Booking::getId).collect(Collectors.toSet());
+        Set<Long> userIds = bookings.stream().map(Booking::getUserId).collect(Collectors.toSet());
+        Set<Long> providerIds = bookings.stream().map(Booking::getProviderId).collect(Collectors.toSet());
+        Set<Long> serviceIds = bookings.stream().map(Booking::getServiceId).collect(Collectors.toSet());
+
+        Map<Long, User> users = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+        Map<Long, ProviderProfile> providers = providerProfileRepository.findAllById(providerIds).stream()
+                .collect(Collectors.toMap(ProviderProfile::getId, Function.identity()));
+        Map<Long, com.localservicefinder.entity.Service> services = serviceRepository.findAllById(serviceIds).stream()
+                .collect(Collectors.toMap(com.localservicefinder.entity.Service::getId, Function.identity()));
+        Map<Long, Payment> payments = paymentRepository.findByBookingIdIn(bookingIds).stream()
+                .collect(Collectors.toMap(Payment::getBookingId, Function.identity(), (a, b) -> a));
+
+        return bookings.stream().map(booking -> {
+            User customer = users.get(booking.getUserId());
+            ProviderProfile provider = providers.get(booking.getProviderId());
+            com.localservicefinder.entity.Service service = services.get(booking.getServiceId());
+            Payment payment = payments.get(booking.getId());
+
+            return BookingResponse.builder()
+                    .id(booking.getId())
+                    .customerId(booking.getUserId())
+                    .customerName(customer != null ? customer.getFullName() : null)
+                    .providerId(booking.getProviderId())
+                    .providerBusinessName(provider != null ? provider.getBusinessName() : null)
+                    .serviceId(booking.getServiceId())
+                    .serviceTitle(service != null ? service.getTitle() : null)
+                    .status(booking.getStatus())
+                    .isEmergency(booking.getIsEmergency())
+                    .scheduledAt(booking.getScheduledAt())
+                    .address(booking.getAddress())
+                    .amount(booking.getAmount())
+                    .paymentStatus(payment != null ? payment.getStatus() : PaymentStatus.PENDING)
+                    .createdAt(booking.getCreatedAt())
+                    .build();
+        }).toList();
+    }
     private record Transition(BookingStatus from, BookingStatus to, String allowedRole) {}
 }
