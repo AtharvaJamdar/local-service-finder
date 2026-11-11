@@ -2,6 +2,7 @@ package com.localservicefinder.service;
 
 import com.localservicefinder.repository.ReviewRepository.ProviderRatingSummary;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -17,6 +18,7 @@ import com.localservicefinder.repository.ProviderProfileRepository;
 import com.localservicefinder.repository.ServiceCategoryRepository;
 import com.localservicefinder.repository.ServiceRepository;
 import com.localservicefinder.repository.UserRepository;
+import com.localservicefinder.util.DistanceUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -217,5 +219,57 @@ public class ServiceService {
                     .createdAt(service.getCreatedAt())
                     .build();
         }).toList();
+    }
+
+    private static final double WEIGHT_DISTANCE = 0.4;
+    private static final double WEIGHT_RATING = 0.4;
+    private static final double WEIGHT_FEE = 0.2;
+    private static final double MAX_DISTANCE_KM = 20.0;
+
+    public List<ServiceResponse> recommend(double userLat, double userLng, Long categoryId) {
+        List<com.localservicefinder.entity.Service> services = categoryId == null
+                ? serviceRepository.findAllVisible()
+                : serviceRepository.findVisibleByCategoryId(categoryId);
+
+        List<ServiceResponse> responses = toResponses(services);
+        if (responses.isEmpty()) {
+            return responses;
+        }
+
+        double minPrice = responses.stream()
+                .filter(r -> r.getPrice() != null && r.getPrice().doubleValue() > 0)
+                .mapToDouble(r -> r.getPrice().doubleValue())
+                .min().orElse(0);
+
+        Set<Long> seenProviders = new java.util.HashSet<>();
+
+        return responses.stream().map(r -> {
+            Double distanceKm = null;
+            double distanceScore = 0;
+            if (r.getProviderLatitude() != null && r.getProviderLongitude() != null) {
+                double km = DistanceUtil.calculateDistanceKm(
+                        userLat, userLng, r.getProviderLatitude(), r.getProviderLongitude());
+                distanceKm = Math.round(km * 10) / 10.0;
+                distanceScore = Math.max(0, 1 - km / MAX_DISTANCE_KM);
+            }
+
+            double ratingScore = r.getProviderRatingAverage() != null
+                    ? r.getProviderRatingAverage() / 5.0
+                    : 0.5;
+
+            double price = r.getPrice() != null ? r.getPrice().doubleValue() : 0;
+            double feeScore = (price > 0 && minPrice > 0) ? minPrice / price : 0;
+
+            double score = 100 * (WEIGHT_DISTANCE * distanceScore
+                    + WEIGHT_RATING * ratingScore
+                    + WEIGHT_FEE * feeScore);
+
+            return r.toBuilder()
+                    .distanceKm(distanceKm)
+                    .recommendationScore(Math.round(score * 10) / 10.0)
+                    .build();
+                }).sorted(Comparator.comparing(ServiceResponse::getRecommendationScore).reversed())
+                .filter(r -> seenProviders.add(r.getProviderId()))
+                .toList();
     }
 }

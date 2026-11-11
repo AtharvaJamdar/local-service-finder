@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor
 public class ServiceResponse {
 
@@ -27,6 +27,10 @@ public class ServiceResponse {
     private Integer providerReviewCount;
     private Long categoryId;
     private String categoryName;
+
+    // Only filled by the recommendation endpoint; null everywhere else
+    private Double distanceKm;
+    private Double recommendationScore;
 
     private LocalDateTime createdAt;
 }

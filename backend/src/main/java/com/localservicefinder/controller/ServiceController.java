@@ -91,4 +91,16 @@ public class ServiceController {
 
         return ResponseEntity.ok(ApiResponse.success("Search results", serviceService.search(keyword, categoryId)));
     }
+
+    // PUBLIC — services ranked best-first by distance, rating and fee for the
+    // customer's location. categoryId is optional (e.g. only plumbers).
+    @GetMapping("/recommend")
+    public ResponseEntity<ApiResponse<List<ServiceResponse>>> recommend(
+            @RequestParam double lat,
+            @RequestParam double lng,
+            @RequestParam(required = false) Long categoryId) {
+
+        return ResponseEntity.ok(ApiResponse.success(
+                "Recommended services", serviceService.recommend(lat, lng, categoryId)));
+    }
 }
