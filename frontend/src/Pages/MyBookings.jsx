@@ -14,6 +14,12 @@ import "./MyBookings.css";
 // backend (PENDING/CONFIRMED/ON_THE_WAY/ARRIVED -> CANCELLED).
 const CANCELLABLE_STATUSES = ["PENDING", "CONFIRMED", "ON_THE_WAY", "ARRIVED"];
 
+// Newest booking first (falls back to id if createdAt is missing).
+const newestFirst = (a, b) => {
+  const diff = new Date(b.createdAt) - new Date(a.createdAt);
+  return Number.isNaN(diff) || diff === 0 ? b.id - a.id : diff;
+};
+
 const BookingRow = ({ booking, onCancel, cancelling }) => {
   const navigate = useNavigate();
   const { cssKey, label } = statusInfo(booking.status);
@@ -120,7 +126,7 @@ const MyBookings = () => {
     const loadBookings = async () => {
       try {
         const data = await api.get("/bookings/my");
-        setBookings(data);
+        setBookings([...data].sort(newestFirst));
       } catch (err) {
         setError(err.message || "Failed to load your bookings.");
       } finally {
