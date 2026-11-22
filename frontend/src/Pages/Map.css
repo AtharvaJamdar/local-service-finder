@@ -206,3 +206,167 @@
     max-width: none;
   }
 }
+
+/* ---------- Smart recommendations ---------- */
+
+.sort-section {
+  padding: 12px 16px 0;
+}
+
+.sort-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(156, 213, 255, 0.2);
+  border-radius: 999px;
+}
+
+.sort-toggle-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.sort-toggle-btn--active {
+  background: var(--primary-color);
+  color: var(--white);
+}
+
+.sort-hint {
+  margin: 8px 4px 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.provider-card--top {
+  border-color: var(--secondary-color);
+  background: rgba(156, 213, 255, 0.1);
+}
+
+.top-pick-tag {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--primary-color);
+  color: var(--white);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.rank-badge {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: rgba(53, 88, 114, 0.1);
+  color: var(--primary-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.match-score {
+  margin-top: 10px;
+}
+
+.match-score-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.match-score-label strong {
+  color: var(--primary-color);
+}
+
+.match-score-track {
+  margin-top: 4px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(53, 88, 114, 0.12);
+  overflow: hidden;
+}
+
+.match-score-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--secondary-color),
+    var(--primary-color)
+  );
+}
+
+/* ---------- Fixed-height layout: only the sidebar list scrolls ---------- */
+
+.map-page {
+  height: calc(100vh - 73px); /* 73px = navbar height */
+  min-height: 0;
+  overflow: hidden;
+}
+
+.map-pane {
+  height: 100%;
+}
+
+.provider-sidebar {
+  height: 100%;
+  min-height: 0;
+}
+
+.provider-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 760px) {
+  .map-page {
+    height: auto;
+    overflow: visible;
+  }
+
+  .map-pane {
+    flex: none;
+    height: 50vh;
+  }
+
+  .provider-sidebar {
+    flex: none;
+    height: 60vh;
+  }
+}
+
+/* ---------- Recenter button ---------- */
+
+.recenter-btn {
+  position: absolute;
+  z-index: 1000;
+  top: 86px; /* just below the zoom +/- buttons */
+  left: 10px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  background: var(--white);
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.recenter-btn:hover {
+  background: #f4f4f4;
+}

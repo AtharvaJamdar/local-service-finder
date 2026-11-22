@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+// export default MapView;
+import React, { useEffect, useRef } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -11,6 +12,12 @@ import {
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { formatDistance } from "../utils/distance";
+
+// Search circle shown around the customer, and how far the map may wander.
+const RADIUS_METERS = 5000;
+const START_ZOOM = 13;
+const MIN_ZOOM = 12; // can zoom out one level from the starting view
+const BOUNDS_SIZE_METERS = 16000; // a bit larger than the 10 km circle
 
 // Colored marker set (blue = user, green = provider default, violet = selected)
 const ICON_BASE =
@@ -62,6 +69,34 @@ function UserMarker({ position }) {
   );
 }
 
+// Button that brings the map back to the starting view (user + circle).
+function RecenterButton({ position }) {
+  const map = useMap();
+  const buttonRef = useRef(null);
+
+  // Stop clicks on the button from also dragging/clicking the map.
+  useEffect(() => {
+    if (buttonRef.current) {
+      L.DomEvent.disableClickPropagation(buttonRef.current);
+    }
+  }, []);
+
+  return (
+    <button
+      ref={buttonRef}
+      type="button"
+      className="recenter-btn"
+      title="Back to my location"
+      aria-label="Back to my location"
+      onClick={() =>
+        map.flyTo([position.lat, position.lng], START_ZOOM, { duration: 0.6 })
+      }
+    >
+      ◎
+    </button>
+  );
+}
+
 // Recenters the map whenever the selected provider changes.
 function FlyToSelection({ target }) {
   const map = useMap();
@@ -110,11 +145,25 @@ const MapView = ({
 
   const selected = providers.find((p) => p.id === selectedProviderId) || null;
 
+  // The route view (Tracking page) needs the full freedom to fit both
+  // points, so the "stay near the circle" limits only apply to the
+  // provider-search map.
+  const limits = showRoute
+    ? {}
+    : {
+        minZoom: MIN_ZOOM,
+        maxBounds: L.latLng(userPosition.lat, userPosition.lng).toBounds(
+          BOUNDS_SIZE_METERS,
+        ),
+        maxBoundsViscosity: 1.0,
+      };
+
   return (
     <MapContainer
       center={[userPosition.lat, userPosition.lng]}
-      zoom={13}
+      zoom={START_ZOOM}
       className="map-canvas"
+      {...limits}
     >
       <TileLayer
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -126,7 +175,7 @@ const MapView = ({
       {!showRoute && (
         <Circle
           center={[userPosition.lat, userPosition.lng]}
-          radius={5000}
+          radius={RADIUS_METERS}
           pathOptions={{
             color: "#355872",
             fillColor: "#9cd5ff",
@@ -173,6 +222,7 @@ const MapView = ({
       )}
 
       {!showRoute && <FlyToSelection target={selected} />}
+      {!showRoute && <RecenterButton position={userPosition} />}
     </MapContainer>
   );
 };
