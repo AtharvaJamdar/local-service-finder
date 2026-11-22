@@ -2,8 +2,9 @@
   display: flex;
   gap: 20px;
   padding: 20px;
-  min-height: calc(100vh - 73px); /* subtract navbar height */
+  height: calc(100vh - 73px); /* subtract navbar height */
   box-sizing: border-box;
+  overflow: hidden;
   background: var(--background-color);
 }
 
@@ -16,6 +17,12 @@
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-md);
+}
+
+/* Only on the Map page: fill the fixed page height.
+   Scoped to .map-page because the Tracking page also uses .map-pane. */
+.map-page .map-pane {
+  height: 100%;
 }
 
 .map-canvas {
@@ -63,11 +70,36 @@
   filter: drop-shadow(0 4px 6px rgba(53, 88, 114, 0.4));
 }
 
+/* ---------- Recenter button ---------- */
+
+.recenter-btn {
+  position: absolute;
+  z-index: 1000;
+  top: 86px; /* just below the zoom +/- buttons */
+  left: 10px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  background: var(--white);
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.recenter-btn:hover {
+  background: #f4f4f4;
+}
+
 /* ---------- Sidebar ---------- */
 
 .provider-sidebar {
   flex: 0 0 360px;
   max-width: 360px;
+  height: 100%;
+  min-height: 0;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-md);
   background: var(--white);
@@ -96,10 +128,13 @@
   color: var(--text-muted);
 }
 
+/* Only this list scrolls; the map stays in place. */
 .provider-list {
   list-style: none;
   margin: 0;
   padding: 12px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -190,21 +225,6 @@
 
 .provider-phone {
   color: var(--text-muted);
-}
-
-@media (max-width: 760px) {
-  .map-page {
-    flex-direction: column;
-  }
-
-  .map-pane {
-    flex: 1 1 55%;
-  }
-
-  .provider-sidebar {
-    flex: 1 1 45%;
-    max-width: none;
-  }
 }
 
 /* ---------- Smart recommendations ---------- */
@@ -308,65 +328,23 @@
   );
 }
 
-/* ---------- Fixed-height layout: only the sidebar list scrolls ---------- */
-
-.map-page {
-  height: calc(100vh - 73px); /* 73px = navbar height */
-  min-height: 0;
-  overflow: hidden;
-}
-
-.map-pane {
-  height: 100%;
-}
-
-.provider-sidebar {
-  height: 100%;
-  min-height: 0;
-}
-
-.provider-list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-}
+/* ---------- Small screens ---------- */
 
 @media (max-width: 760px) {
   .map-page {
+    flex-direction: column;
     height: auto;
     overflow: visible;
   }
 
-  .map-pane {
+  .map-page .map-pane {
     flex: none;
     height: 50vh;
   }
 
   .provider-sidebar {
     flex: none;
+    max-width: none;
     height: 60vh;
   }
-}
-
-/* ---------- Recenter button ---------- */
-
-.recenter-btn {
-  position: absolute;
-  z-index: 1000;
-  top: 86px; /* just below the zoom +/- buttons */
-  left: 10px;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-  background: var(--white);
-  color: var(--primary-color);
-  font-size: 1.2rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.recenter-btn:hover {
-  background: #f4f4f4;
 }
